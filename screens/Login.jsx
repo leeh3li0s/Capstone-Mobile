@@ -1,31 +1,35 @@
 import { View, Text, StyleSheet, TextInput, TouchableOpacity} from 'react-native'
-import React, {useContext, useState } from 'react'
+import React, { useContext, useState } from 'react'
+import { AuthenticationContext } from '../context/AuthenticationContext'
 import { useNavigation } from '@react-navigation/native';
-import { AuthenticationContext } from '../context/AuthenticationContext';
 
 
-export default function Register() {
+
+export default function Login() {
     const nav = useNavigation();
-    const getAuthData = useContext(AuthenticationContext);
 
+    const { login } = useContext(AuthenticationContext);
+    const getAuthData = useContext(AuthenticationContext);
     const {email, username, password, confirmPassword} = getAuthData.getAuthenticationDetails;
+
+    const loginHandler = () => {
+        if (getEmail == email &&
+            getUsername == username &&
+            getPassword == password) {
+                alert('Login successful!');
+                login();
+            }
+        
+        else {
+            alert('Login failed. Please check your credentials and try again.');
+        }
+    }
 
     const [getEmail, setEmail] = useState('');
     const [getUsername, setUsername] = useState('');
     const [getPassword, setPassword] = useState('');
-    const [getConfirmPassword, setConfirmPassword] = useState('');
-
-    const registerHandler = () => {
-        getAuthData.setAuthenticationDetails({
-            email: getEmail,
-            username: getUsername,
-            password: getPassword,
-            confirmPassword: getConfirmPassword,
-        })
-        nav.navigate('Login');
-        
-    }
-
+    
+    
     return (
     <View style={styles.mainComponent}  >
         <View style={styles.RegisterContainer}>
@@ -34,26 +38,19 @@ export default function Register() {
                 fontWeight: 'bold',
                 marginBottom: 30,
             }}
-            >Register</Text>
-            <TextInput 
-            style={styles.TextInputField} 
-            placeholder='Email' 
-            onChangeText={(e) => setEmail(e)}/>
-            
-            <TextInput 
-            style={styles.TextInputField} 
-            placeholder='Username' 
-            onChangeText={(e) => setUsername(e)}/>
-
-            <TextInput 
-            style={styles.TextInputField} 
-            placeholder='Password' 
-            onChangeText={(e) => setPassword(e)}/>
-
-            <TextInput 
-            style={styles.TextInputField} 
-            placeholder='Confirm Password' 
-            onChangeText={(e) => setConfirmPassword(e)}/>
+            >Login</Text>
+            <TextInput
+                style={styles.TextInputField}
+                placeholder='Email'
+                onChangeText={(e) => setEmail(e)}/>
+            <TextInput
+                style={styles.TextInputField}
+                placeholder='Username'
+                onChangeText={(e) => setUsername(e)}/>
+            <TextInput
+                style={styles.TextInputField}
+                placeholder='Password'
+                onChangeText={(e) => setPassword(e)}/>
             
 
             <TouchableOpacity style={{
@@ -66,7 +63,7 @@ export default function Register() {
                 justifyContent: 'center',
                 alignItems: 'center',
             }}
-            onPress={registerHandler}
+            onPress={loginHandler}
             >
                 <Text style={{
                     color: '#ffffff',
@@ -74,6 +71,7 @@ export default function Register() {
                     fontWeight: 'bold',
                 }}>Login</Text>
             </TouchableOpacity>
+
         </View>
     </View>
     )

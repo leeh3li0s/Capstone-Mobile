@@ -11,8 +11,10 @@ import Calendar from './screens/Calendar';
 import BookingDetails from './components/BookingDetails';
 import ConfirmAppointment from './screens/ConfirmAppointment';
 import Register from './screens/Register';
+import Login from './screens/Login';
 
 import { AppointmentDetailsContext } from './context/AppointmentDetailsContext';
+import { AuthenticationContext } from './context/AuthenticationContext';
 
 export default function App() {
   const Stack = createNativeStackNavigator();
@@ -33,6 +35,14 @@ export default function App() {
     appointmentTimeSlot: '',
   };
 
+  const AuthenticationDetails = {
+    email: '123',
+    username: '456',
+    password: '789',
+    confirmPassword: '00',
+  }
+
+  const [getAuthenticationDetails, setAuthenticationDetails] = useState(AuthenticationDetails);
   const [getAppointmentDetails, setAppointmentDetails] = useState(AppointmentDetails);
   const [getAppointments, setAppointments] = useState([]);
 
@@ -63,10 +73,13 @@ export default function App() {
   // Stack for authentication
   function AuthStackNavigator() {
     return (
+      <AuthenticationContext.Provider value={{ getAuthenticationDetails, setAuthenticationDetails }}>
       <Stack.Navigator>
         <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
+        <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
         {/* If you add Login screen, add here */}
       </Stack.Navigator>
+      </AuthenticationContext.Provider>
     );
   }
 
