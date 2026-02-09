@@ -21,14 +21,26 @@ export default function ViewAppointments() {
 
   if (getAppointments.length === 0) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>No appointments yet.</Text>
+      <View style= {{
+        width: '100%',
+        height: '100%'
+      }}>
+        <View style={styles.ViewAppointmentsContainer}>
+          <Text style= {styles.ViewAppointmentsHeader}>Your Appointments</Text>
+        </View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>No appointments yet.</Text>
+        </View>
       </View>
+      
     );
   }
 
   return (
     <>
+    <View style={styles.ViewAppointmentsContainer}>
+          <Text style= {styles.ViewAppointmentsHeader}>Your Appointments</Text>
+        </View>
       <ScrollView style={{ padding: 20 }}>
         {getAppointments.map((item) => (
           <View
@@ -124,5 +136,18 @@ const styles = StyleSheet.create({
   doneText: {
     color: '#FF3B30',
     fontSize: 16
+  },
+
+  ViewAppointmentsContainer: {
+    height: '9%',
+    backgroundColor: "#ffffff"
+
+  },
+
+  ViewAppointmentsHeader: {
+    paddingLeft: 20,
+    paddingTop: 15,
+    fontSize: 30,
+    fontWeight: 'bold'
   }
 });

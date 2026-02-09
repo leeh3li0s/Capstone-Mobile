@@ -24,7 +24,7 @@ const Tab = createBottomTabNavigator();
 export default function App() {
 
   /* ---------------- AUTH STATE ---------------- */
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [getAuthenticationDetails, setAuthenticationDetails] = useState({
     email: '123',

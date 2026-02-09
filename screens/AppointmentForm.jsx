@@ -14,12 +14,8 @@ import { AppointmentDetailsContext } from '../context/AppointmentDetailsContext'
 export default function AppointmentForm() {
   const nav = useNavigation();
 
-  // ✅ FIX: destructure EVERYTHING you use
-  const {
-    getAppointmentDetails,
-    setAppointmentDetails,
-    setAppointments
-  } = useContext(AppointmentDetailsContext);
+  const { getAppointmentDetails, setAppointmentDetails } =
+    useContext(AppointmentDetailsContext);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -33,27 +29,60 @@ export default function AppointmentForm() {
     petGender: '',
   });
 
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+
   const updateField = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const validateField = (value) => {
+    if (!value || value.trim() === '') return 'This field is required.';
+    return '';
+  };
+
+  const handleBlur = (field) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    setErrors(prev => ({ ...prev, [field]: validateField(formData[field]) }));
   };
 
   const handleSubmit = () => {
-  const finalAppointment = {
-    ...getAppointmentDetails,
-    ...formData,
-    id: Date.now()
+    let newErrors = {};
+    let newTouched = {};
+
+    Object.keys(formData).forEach(field => {
+      const error = validateField(formData[field]);
+      if (error) newErrors[field] = error;
+      newTouched[field] = true;
+    });
+
+    setErrors(newErrors);
+    setTouched(newTouched);
+
+    if (Object.keys(newErrors).length > 0) return;
+
+    setAppointmentDetails({
+      ...getAppointmentDetails,
+      ...formData,
+      id: Date.now()
+    });
+
+    nav.navigate('ConfirmAppointment');
   };
 
-  // update draft only
-  setAppointmentDetails(finalAppointment);
-
-  nav.navigate('ConfirmAppointment');
-};
-
-
+  const renderError = (field, message) =>
+    touched[field] && errors[field] ? (
+      <Text
+        style={{
+          color: 'red',
+          fontSize: 13,
+          marginBottom: 6,
+          paddingLeft: 4
+        }}
+      >
+        {message}
+      </Text>
+    ) : null;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -73,47 +102,74 @@ export default function AppointmentForm() {
 
           <Text style={styles.label}>Full Name</Text>
           <View style={styles.nameRow}>
-            <TextInput
-              style={[styles.input, styles.halfInput]}
-              placeholder="First Name"
-              value={formData.firstName}
-              onChangeText={text => updateField('firstName', text)}
-            />
-            <TextInput
-              style={[styles.input, styles.halfInput]}
-              placeholder="Last Name"
-              value={formData.lastName}
-              onChangeText={text => updateField('lastName', text)}
-            />
+            <View style={{ flex: 1, marginRight: 8 }}>
+              {renderError('firstName', 'First name is required.')}
+              <TextInput
+                style={[
+                  styles.input,
+                  touched.firstName && errors.firstName && { borderColor: 'red' }
+                ]}
+                placeholder="First Name"
+                value={formData.firstName}
+                onChangeText={text => updateField('firstName', text)}
+                onBlur={() => handleBlur('firstName')}
+              />
+            </View>
+
+            <View style={{ flex: 1 }}>
+              {renderError('lastName', 'Last name is required.')}
+              <TextInput
+                style={[
+                  styles.input,
+                  touched.lastName && errors.lastName && { borderColor: 'red' }
+                ]}
+                placeholder="Last Name"
+                value={formData.lastName}
+                onChangeText={text => updateField('lastName', text)}
+                onBlur={() => handleBlur('lastName')}
+              />
+            </View>
           </View>
 
-          <Text style={styles.label}>Contact No.</Text>
+          {renderError('contactNumber', 'Contact number is required.')}
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              touched.contactNumber && errors.contactNumber && { borderColor: 'red' }
+            ]}
             placeholder="Contact Number"
             value={formData.contactNumber}
             onChangeText={text => updateField('contactNumber', text)}
+            onBlur={() => handleBlur('contactNumber')}
             keyboardType="phone-pad"
           />
 
-          <Text style={styles.label}>E-Mail</Text>
+          {renderError('email', 'Please enter a valid email address.')}
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              touched.email && errors.email && { borderColor: 'red' }
+            ]}
             placeholder="Email Address"
             value={formData.email}
             onChangeText={text => updateField('email', text)}
+            onBlur={() => handleBlur('email')}
             keyboardType="email-address"
             autoCapitalize="none"
           />
 
-          <Text style={styles.label}>Reason for Visit</Text>
+          {renderError('reasonForVisit', 'Reason for visit is required.')}
           <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[
+              styles.input,
+              styles.textArea,
+              touched.reasonForVisit && errors.reasonForVisit && { borderColor: 'red' }
+            ]}
             placeholder="Reason for visit"
             value={formData.reasonForVisit}
             onChangeText={text => updateField('reasonForVisit', text)}
+            onBlur={() => handleBlur('reasonForVisit')}
             multiline
-            numberOfLines={3}
           />
         </View>
 
@@ -121,85 +177,80 @@ export default function AppointmentForm() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Pet Details</Text>
 
-          <Text style={styles.label}>Pet's Name</Text>
+          {renderError('petName', 'Pet name is required.')}
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              touched.petName && errors.petName && { borderColor: 'red' }
+            ]}
             placeholder="Pet's Name"
             value={formData.petName}
             onChangeText={text => updateField('petName', text)}
+            onBlur={() => handleBlur('petName')}
           />
 
-          <Text style={styles.label}>Species (e.g. Dog, Cat)</Text>
+          {renderError('petType', 'Species is required.')}
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              touched.petType && errors.petType && { borderColor: 'red' }
+            ]}
             placeholder="Species"
             value={formData.petType}
             onChangeText={text => updateField('petType', text)}
+            onBlur={() => handleBlur('petType')}
           />
 
-          <Text style={styles.label}>Pet's Gender</Text>
+          {renderError('petGender', 'Please select your pet’s gender.')}
           <View style={styles.genderContainer}>
-            <TouchableOpacity
-              style={[
-                styles.genderButton,
-                formData.petGender === 'Male' && styles.genderButtonSelected
-              ]}
-              onPress={() => updateField('petGender', 'Male')}
-            >
-              <Text
+            {['Male', 'Female'].map(gender => (
+              <TouchableOpacity
+                key={gender}
                 style={[
-                  styles.genderButtonText,
-                  formData.petGender === 'Male' && styles.genderButtonTextSelected
+                  styles.genderButton,
+                  formData.petGender === gender && styles.genderButtonSelected,
+                  touched.petGender && errors.petGender && { borderColor: 'red' }
                 ]}
+                onPress={() => {
+                  updateField('petGender', gender);
+                  setErrors(prev => ({ ...prev, petGender: '' }));
+                }}
+                onBlur={() => handleBlur('petGender')}
               >
-                Male
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.genderButton,
-                formData.petGender === 'Female' && styles.genderButtonSelected
-              ]}
-              onPress={() => updateField('petGender', 'Female')}
-            >
-              <Text
-                style={[
-                  styles.genderButtonText,
-                  formData.petGender === 'Female' && styles.genderButtonTextSelected
-                ]}
-              >
-                Female
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={[
+                    styles.genderButtonText,
+                    formData.petGender === gender && styles.genderButtonTextSelected
+                  ]}
+                >
+                  {gender}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
 
-          <Text style={styles.label}>Pet's Breed</Text>
+          {renderError('petBreed', 'Pet breed is required.')}
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              touched.petBreed && errors.petBreed && { borderColor: 'red' }
+            ]}
             placeholder="Pet's Breed"
             value={formData.petBreed}
             onChangeText={text => updateField('petBreed', text)}
+            onBlur={() => handleBlur('petBreed')}
           />
-
-          <Text style={styles.uploadLabel}>
-            If your pet has previous medical records, you can upload them here:
-          </Text>
-          <TouchableOpacity style={styles.uploadButton}>
-            <Text style={styles.uploadButtonText}>Upload</Text>
-          </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          style={styles.continueButton}
-          onPress={handleSubmit}
-        >
+        <TouchableOpacity style={styles.continueButton} onPress={handleSubmit}>
           <Text style={styles.continueButtonText}>Continue</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f5f5' },
