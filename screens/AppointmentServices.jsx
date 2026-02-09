@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import MobileStylesheet from '../styles/MobileStylesheet'
 import { useNavigation } from '@react-navigation/native';
 import { useContext } from 'react';
@@ -21,9 +21,11 @@ export default function AppointmentServices() {
     
     return (
         <View style={MobileStylesheet.mainContainer}>
-            <Text>Appointment</Text>
-            <Text>What kind of Service do you want to Avail?</Text>
-
+            <View style = {styles.HeaderContainer}>
+                <Text style={styles.HeaderText}>Appointment</Text>
+                <Text>What kind of Service do you want to Avail?</Text>
+            </View>
+            
             <View style={MobileStylesheet.AppointmentServicesContainer}>
                 <TouchableOpacity style={MobileStylesheet.Services} onPress={() => handleServiceSelection('Checkup or Consultation')}>
                     <Text>Checkup or Consultation</Text>
@@ -54,3 +56,24 @@ export default function AppointmentServices() {
         </View>
 )
 }
+
+const styles = StyleSheet.create({
+    HeaderContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 'auto',
+    backgroundColor: '#5c1313'
+    
+    },
+    HeaderText: {
+        fontSize: 20,
+        fontWeight: 'bold'
+    },
+
+    SubheaderText: {
+        fontSize: 15,
+        color: '#797979'
+    },
+
+    
+}) 

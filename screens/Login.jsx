@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 
 
 
+
 export default function Login() {
     const nav = useNavigation();
     const { getAuthenticationDetails, setIsLoggedIn } = useContext(AuthenticationContext);
@@ -12,7 +13,58 @@ export default function Login() {
     const getAuthData = useContext(AuthenticationContext);
     const {email, username, password, confirmPassword} = getAuthData.getAuthenticationDetails;
 
+    const [getEmail, setEmail] = useState('');
+    const [getUsername, setUsername] = useState('');
+    const [getPassword, setPassword] = useState('');
+    const [emailError, setEmailError] = useState(false);
+    const [usernameError, setUsernameError] = useState(false);
+    const [passwordError, setPasswordError] = useState(false);
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    const validateEmail = (value) => {
+        return emailRegex.test(value);
+    };
+
+    const validateEmailField = () => {
+        if (!getEmail.trim()) {
+            setEmailError(true);
+            return false;
+        }
+        if (!validateEmail(getEmail)) {
+            setEmailError(true);
+            return false;
+        }
+        setEmailError(false);
+        return true;
+    };
+
+    const validateUsernameField = () => {
+        if (!getUsername.trim()) {
+            setUsernameError(true);
+            return false;
+        }
+        setUsernameError(false);
+        return true;
+    };
+
+    const validatePasswordField = () => {
+        if (!getPassword.trim()) {
+            setPasswordError(true);
+            return false;
+        }
+        setPasswordError(false);
+        return true;
+    };
+
     const loginHandler = () => {
+        // Ensure fields are valid before attempting login
+        const emailValid = validateEmailField();
+        const usernameValid = validateUsernameField();
+        const passwordValid = validatePasswordField();
+
+        if (!emailValid || !usernameValid || !passwordValid) return;
+
         if (
             getEmail === email &&
             getUsername === username &&
@@ -23,12 +75,7 @@ export default function Login() {
         } else {
             alert('Login failed. Please check your credentials.');
         }
-        };
-
-
-    const [getEmail, setEmail] = useState('');
-    const [getUsername, setUsername] = useState('');
-    const [getPassword, setPassword] = useState('');
+    };
     
     
     return (
@@ -40,18 +87,73 @@ export default function Login() {
                 marginBottom: 30,
             }}
             >Login</Text>
+            {emailError && (
+            <Text style={{
+                    color: 'red',
+                    fontSize: 10,
+                    width: '80%',
+                    paddingLeft: 5
+                    }}>
+                Please enter your email.
+                </Text>
+            )}
             <TextInput
-                style={styles.TextInputField}
+                style={[
+                    styles.TextInputField,
+                    emailError && { borderColor: 'red', borderWidth: 2 },
+                ]}
                 placeholder='Email'
-                onChangeText={(e) => setEmail(e)}/>
+                value={getEmail}
+                onChangeText={(text) => {
+                    setEmail(text);
+                    if (emailError) setEmailError(false);
+                }}
+                onBlur={validateEmailField}/>
+            {usernameError && (
+            <Text style={{
+                    color: 'red',
+                    fontSize: 10,
+                    width: '80%',
+                    paddingLeft: 5
+                    }}>
+                Please enter your username.
+                </Text>
+            )}
             <TextInput
-                style={styles.TextInputField}
+                style={[
+                    styles.TextInputField,
+                    usernameError && { borderColor: 'red', borderWidth: 2 },
+                ]}
                 placeholder='Username'
-                onChangeText={(e) => setUsername(e)}/>
+                value={getUsername}
+                onChangeText={(text) => {
+                    setUsername(text);
+                    if (usernameError) setUsernameError(false);
+                }}
+                onBlur={validateUsernameField}/>
+            {passwordError && (
+            <Text style={{
+                    color: 'red',
+                    fontSize: 10,
+                    width: '80%',
+                    paddingLeft: 5
+                    }}>
+                Please enter your password.
+                </Text>
+            )}
             <TextInput
-                style={styles.TextInputField}
+                style={[
+                    styles.TextInputField,
+                    passwordError && { borderColor: 'red', borderWidth: 2 },
+                ]}
                 placeholder='Password'
-                onChangeText={(e) => setPassword(e)}/>
+                secureTextEntry
+                value={getPassword}
+                onChangeText={(text) => {
+                    setPassword(text);
+                    if (passwordError) setPasswordError(false);
+                }}
+                onBlur={validatePasswordField}/>
             
 
             <TouchableOpacity style={{
