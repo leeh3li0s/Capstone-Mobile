@@ -18,16 +18,16 @@ const MobileStylesheet = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
 
-        marginTop: 100,
+        marginTop: 50,
         width: '100%',
-        height: '90%',
+        height: '80%',
         backgroundColor: "#ffffff"
     },
     
     Services: {
         
         width: '48%',
-        height: '25%',
+        height: '30%',
         backgroundColor: "#ffffff",
         justifyContent: 'center',
         alignItems: 'center',

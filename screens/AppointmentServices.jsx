@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, Modal} from 'react-native'
 import MobileStylesheet from '../styles/MobileStylesheet'
 import { useNavigation } from '@react-navigation/native';
 import { useContext } from 'react';
@@ -19,16 +19,21 @@ export default function AppointmentServices() {
         nav.navigate('AppointmentDate');
     }
     
+    // Modal state
+    
     return (
         <View style={MobileStylesheet.mainContainer}>
             <View style = {styles.HeaderContainer}>
-                <Text style={styles.HeaderText}>Appointment</Text>
-                <Text>What kind of Service do you want to Avail?</Text>
+                <Text style={styles.HeaderText}>Services</Text>
+                <Text>What kind of service do you want to avail?</Text>
             </View>
             
             <View style={MobileStylesheet.AppointmentServicesContainer}>
                 <TouchableOpacity style={MobileStylesheet.Services} onPress={() => handleServiceSelection('Checkup or Consultation')}>
-                    <Text>Checkup or Consultation</Text>
+                    <Text style={{
+                    width: '60%',
+                    textAlign: 'center'
+                }}>Checkup or Consultation</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={MobileStylesheet.Services} onPress={() => handleServiceSelection('Wellness & Vaccination')}>
@@ -62,8 +67,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     height: 'auto',
-    backgroundColor: '#5c1313'
+    backgroundColor: '#ffffff',
     
+    marginTop: 30
     },
     HeaderText: {
         fontSize: 20,
