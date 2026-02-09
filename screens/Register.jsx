@@ -16,14 +16,21 @@ export default function Register() {
     const [getConfirmPassword, setConfirmPassword] = useState('');
 
     const registerHandler = () => {
-        getAuthData.setAuthenticationDetails({
-            email: getEmail,
-            username: getUsername,
-            password: getPassword,
-            confirmPassword: getConfirmPassword,
-        })
-        nav.navigate('Login');
-        
+
+        if (getPassword !== getConfirmPassword) {
+            alert('Passwords do not match. Please try again.');
+            return;
+        }
+
+        else {
+            getAuthData.setAuthenticationDetails({
+                email: getEmail,
+                username: getUsername,
+                password: getPassword,
+                confirmPassword: getConfirmPassword,
+            })
+            nav.navigate('Login');
+        }
     }
 
     return (
@@ -112,7 +119,7 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         paddingHorizontal: 10,
 
-        borderColor: '#cccccc',
+        borderColor: '#ddd',
         backgroundColor: '#ffffff',
     }
 })

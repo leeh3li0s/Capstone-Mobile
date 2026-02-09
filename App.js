@@ -2,6 +2,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useState } from 'react';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+
 
 import AppointmentServices from './screens/AppointmentServices';
 import AppointmentDate from './screens/AppointmentDate';
@@ -16,11 +18,23 @@ import Login from './screens/Login';
 import { AppointmentDetailsContext } from './context/AppointmentDetailsContext';
 import { AuthenticationContext } from './context/AuthenticationContext';
 
-export default function App() {
-  const Stack = createNativeStackNavigator();
-  const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
-  const AppointmentDetails = {
+export default function App() {
+
+  /* ---------------- AUTH STATE ---------------- */
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const [getAuthenticationDetails, setAuthenticationDetails] = useState({
+    email: '123',
+    username: '456',
+    password: '789',
+    confirmPassword: '00',
+  });
+
+  /* ------------- APPOINTMENT STATE ------------ */
+  const [getAppointmentDetails, setAppointmentDetails] = useState({
     service: '',
     firstName: '',
     lastName: '',
@@ -33,73 +47,102 @@ export default function App() {
     petGender: '',
     appointmentDate: '',
     appointmentTimeSlot: '',
-  };
+  });
 
-  const AuthenticationDetails = {
-    email: '123',
-    username: '456',
-    password: '789',
-    confirmPassword: '00',
-  }
-
-  const [getAuthenticationDetails, setAuthenticationDetails] = useState(AuthenticationDetails);
-  const [getAppointmentDetails, setAppointmentDetails] = useState(AppointmentDetails);
   const [getAppointments, setAppointments] = useState([]);
 
-  // This is your main app with tabs
-  function MainTabNavigator() {
-    return (
-      <Tab.Navigator>
-        <Tab.Screen name="Home" component={HomeStackNavigator} options={{ headerShown: false }} />
-        <Tab.Screen name="View Appointments" component={ViewAppointments} options={{ headerShown: false }} />
-      </Tab.Navigator>
-    );
+  /* ---------------- NAVIGATORS ---------------- */
+
+
+  function getTabBarStyle(route) {
+  const routeName = getFocusedRouteNameFromRoute(route) ?? 'AppointmentServices';
+
+  if (
+    routeName === 'AppointmentDate' ||
+    routeName === 'AppointmentForm' ||
+    routeName === 'BookingDetails' ||
+    routeName === 'ConfirmAppointment' ||
+    routeName === 'Calendar'
+  ) {
+    return { display: 'none' };
   }
 
-  // Stack for screens inside "Home"
+  return {};
+}
+
+
   function HomeStackNavigator() {
     return (
-      <Stack.Navigator initialRouteName="AppointmentServices">
-        <Stack.Screen name="AppointmentServices" component={AppointmentServices} options={{ headerShown: false }} />
-        <Stack.Screen name="AppointmentDate" component={AppointmentDate} options={{ headerShown: false }} />
-        <Stack.Screen name="AppointmentForm" component={AppointmentForm} options={{ headerShown: false }} />
-        <Stack.Screen name="BookingDetails" component={BookingDetails} options={{ headerShown: false }} />
-        <Stack.Screen name="ConfirmAppointment" component={ConfirmAppointment} options={{ headerShown: false }} />
-        <Stack.Screen name="Calendar" component={Calendar} options={{ headerShown: false }} />
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="AppointmentServices" component={AppointmentServices} />
+        <Stack.Screen name="AppointmentDate" component={AppointmentDate} />
+        <Stack.Screen name="AppointmentForm" component={AppointmentForm} />
+        <Stack.Screen name="BookingDetails" component={BookingDetails} />
+        <Stack.Screen name="ConfirmAppointment" component={ConfirmAppointment} />
+        <Stack.Screen name="Calendar" component={Calendar} />
       </Stack.Navigator>
     );
   }
 
-  // Stack for authentication
+  function MainTabNavigator() {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen
+        name="Home"
+        component={HomeStackNavigator}
+        options={({ route }) => ({
+          headerShown: false,
+          tabBarStyle: getTabBarStyle(route),
+        })}
+      />
+      <Tab.Screen
+        name="ViewAppointments"
+        component={ViewAppointments}
+        options={{ headerShown: false }}
+      />
+    </Tab.Navigator>
+  );
+}
+
+
   function AuthStackNavigator() {
     return (
-      <AuthenticationContext.Provider value={{ getAuthenticationDetails, setAuthenticationDetails }}>
-      <Stack.Navigator>
-        <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
-        <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
-        {/* If you add Login screen, add here */}
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Register" component={Register} />
+        <Stack.Screen name="Login" component={Login} />
       </Stack.Navigator>
-      </AuthenticationContext.Provider>
     );
   }
 
-  // Root navigator decides which stack to show
-  // For now, let's assume user is not logged in
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  /* ---------------- ROOT ---------------- */
 
   return (
-    <AppointmentDetailsContext.Provider
-      value={{ getAppointmentDetails, setAppointmentDetails, getAppointments, setAppointments }}
+    <AuthenticationContext.Provider
+      value={{
+        getAuthenticationDetails,
+        setAuthenticationDetails,
+        isLoggedIn,
+        setIsLoggedIn,
+      }}
     >
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          {isLoggedIn ? (
-            <Stack.Screen name="MainApp" component={MainTabNavigator} />
-          ) : (
-            <Stack.Screen name="Auth" component={AuthStackNavigator} />
-          )}
-        </Stack.Navigator>
-      </NavigationContainer>
-    </AppointmentDetailsContext.Provider>
+      <AppointmentDetailsContext.Provider
+        value={{
+          getAppointmentDetails,
+          setAppointmentDetails,
+          getAppointments,
+          setAppointments,
+        }}
+      >
+        <NavigationContainer>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            {isLoggedIn ? (
+              <Stack.Screen name="MainApp" component={MainTabNavigator} />
+            ) : (
+              <Stack.Screen name="Auth" component={AuthStackNavigator} />
+            )}
+          </Stack.Navigator>
+        </NavigationContainer>
+      </AppointmentDetailsContext.Provider>
+    </AuthenticationContext.Provider>
   );
 }

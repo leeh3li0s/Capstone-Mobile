@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { AppointmentDetailsContext } from '../context/AppointmentDetailsContext';
 import { useContext, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
@@ -9,11 +9,13 @@ export default function AppointmentDate() {
   const getData = useContext(AppointmentDetailsContext);
   const nav = useNavigation();
 
-  // ✅ Local state for selections
+  // Local state
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
 
-  // Handlers for local state
+  // Modal state
+  const [showCancelModal, setShowCancelModal] = useState(false);
+
   const handleDateSelect = (day) => {
     setSelectedDate(day.dateString);
   };
@@ -22,7 +24,6 @@ export default function AppointmentDate() {
     setSelectedTimeSlot(slot);
   };
 
-  // ✅ Handler: commit local selections into Context when Next is pressed
   const handleNext = () => {
     getData.setAppointmentDetails(prev => ({
       ...prev,
@@ -38,29 +39,131 @@ export default function AppointmentDate() {
     '2:00 PM - 3:00 PM'
   ];
 
+  const backHandler = () => {
+    if (!selectedDate && !selectedTimeSlot) {
+      nav.goBack();
+    } else {
+      setShowCancelModal(true);
+    }
+  };
+
+  const confirmCancel = () => {
+    setShowCancelModal(false);
+    nav.goBack();
+  };
+
   return (
-    <View style={MobileStylesheet.mainContainer}>
-      <Text>Appointment Date</Text>
-      <Text>Service: {getData.getAppointmentDetails.service}</Text>
-      <Text>Date: {selectedDate || 'None selected'}</Text>
-      <Text>Time: {selectedTimeSlot || 'None selected'}</Text>
+    <View style={[MobileStylesheet.mainContainer, {
+      justifyContent: 'center',
+      alignItems: 'center',
+    }]}>
+
+      {/* Back Button */}
+      <TouchableOpacity
+        style={{
+          position: 'absolute',
+          top: 20,
+          left: 20,
+          zIndex: 10,
+        }}
+        onPress={backHandler}
+      >
+        <Text style={{ fontSize: 16, color: '#007AFF' }}>
+          Return
+        </Text>
+      </TouchableOpacity>
+
+      {/* Cancel Confirmation Modal */}
+      <Modal
+        transparent
+        visible={showCancelModal}
+        animationType="fade"
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.4)',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <View style={{
+            backgroundColor: '#fff',
+            padding: 20,
+            borderRadius: 12,
+            width: '80%'
+          }}>
+            <Text style={{
+              fontSize: 18,
+              fontWeight: 'bold',
+              marginBottom: 10
+            }}>
+              Cancel appointment?
+            </Text>
+
+            <Text style={{
+              fontSize: 14,
+              color: '#666',
+              marginBottom: 20
+            }}>
+              You have unsaved changes. Are you sure you want to go back?
+            </Text>
+
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              gap: 15
+            }}>
+              <TouchableOpacity onPress={() => setShowCancelModal(false)}>
+                <Text style={{ color: '#007AFF', fontSize: 16 }}>
+                  Stay
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={confirmCancel}>
+                <Text style={{ color: '#FF3B30', fontSize: 16 }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Title */}
+      <Text style={{ fontWeight: 'bold', fontSize: 25, paddingBottom: 10 }}>
+        Time & Date
+      </Text>
+
+      <Text style={{
+        fontSize: 12,
+        paddingBottom: 20,
+        width: "70%",
+        textAlign: 'center',
+        color: '#a1a1a1'
+      }}>
+        Select your preferred time and date for the appointment.
+      </Text>
 
       {/* Calendar */}
-      <View style={{ backgroundColor: '#ffffff', height: '45%' }}>
+      <View style={{ 
+        height: '38%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%'
+        }}>
         <Calendar
           theme={{
             backgroundColor: 'transparent',
             calendarBackground: 'transparent',
-            textSectionTitleColor: '#E6EDFF',
             dayTextColor: '#FFFFFF',
             todayTextColor: '#FFFFFF',
             monthTextColor: '#FFFFFF',
-            textMonthFontWeight: 'bold',
             arrowColor: '#FFFFFF',
             selectedDayBackgroundColor: '#FFFFFF',
             selectedDayTextColor: '#4F7CFF'
           }}
           style={{
+            alignSelf: 'center',
+            width: '100%',
             margin: 20,
             backgroundColor: '#4F7CFF',
             borderRadius: 20,
@@ -68,24 +171,20 @@ export default function AppointmentDate() {
           }}
           onDayPress={handleDateSelect}
           markedDates={
-            selectedDate
-              ? { [selectedDate]: { selected: true } }
-              : {}
+            selectedDate ? { [selectedDate]: { selected: true } } : {}
           }
         />
       </View>
 
       {/* Time Slots */}
-      <View
-        style={{
-          backgroundColor: '#ffffff',
-          width: '100%',
-          height: '25%',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: 10
-        }}
-      >
+      <View style={{
+        backgroundColor: '#ffffff',
+        width: '100%',
+        height: '25%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 10
+      }}>
         {timeSlots.map(slot => {
           const selected = selectedTimeSlot === slot;
 
@@ -94,10 +193,7 @@ export default function AppointmentDate() {
               key={slot}
               style={[
                 MobileStylesheet.TimeSlot,
-                selected && {
-                  backgroundColor: '#4F7CFF',
-                  borderColor: '#4F7CFF'
-                }
+                selected && { backgroundColor: '#4F7CFF', borderColor: '#4F7CFF' }
               ]}
               onPress={() => handleTimeSelect(slot)}
             >
@@ -110,15 +206,13 @@ export default function AppointmentDate() {
       </View>
 
       {/* Next Button */}
-      <View
-        style={{
-          backgroundColor: '#ffffff',
-          width: '100%',
-          height: '5%',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}
-      >
+      <View style={{
+        backgroundColor: '#ffffff',
+        width: '100%',
+        height: '5%',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
         <TouchableOpacity
           style={[
             MobileStylesheet.Button,

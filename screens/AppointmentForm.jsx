@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
   },
   uploadButtonText: { fontSize: 16, color: '#007AFF', fontWeight: '500' },
   continueButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#4F7CFF',
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',

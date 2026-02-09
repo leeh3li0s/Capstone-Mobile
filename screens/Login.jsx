@@ -7,23 +7,24 @@ import { useNavigation } from '@react-navigation/native';
 
 export default function Login() {
     const nav = useNavigation();
+    const { getAuthenticationDetails, setIsLoggedIn } = useContext(AuthenticationContext);
 
-    const { login } = useContext(AuthenticationContext);
     const getAuthData = useContext(AuthenticationContext);
     const {email, username, password, confirmPassword} = getAuthData.getAuthenticationDetails;
 
     const loginHandler = () => {
-        if (getEmail == email &&
-            getUsername == username &&
-            getPassword == password) {
-                alert('Login successful!');
-                login();
-            }
-        
-        else {
-            alert('Login failed. Please check your credentials and try again.');
+        if (
+            getEmail === email &&
+            getUsername === username &&
+            getPassword === password
+        ) {
+            alert('Login successful!');
+            setIsLoggedIn(true); // 🔥 THIS IS THE SWITCH
+        } else {
+            alert('Login failed. Please check your credentials.');
         }
-    }
+        };
+
 
     const [getEmail, setEmail] = useState('');
     const [getUsername, setUsername] = useState('');
@@ -110,7 +111,7 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         paddingHorizontal: 10,
 
-        borderColor: '#cccccc',
+        borderColor: '#ddd',
         backgroundColor: '#ffffff',
     }
 })
