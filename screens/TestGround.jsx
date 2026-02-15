@@ -1,4 +1,4 @@
-import { View, TextInput, ImageBackground, StyleSheet } from 'react-native';
+import { View, TextInput, ImageBackground, StyleSheet,TouchableOpacity } from 'react-native';
 import React from 'react';
 
 export default function TestGround() {
@@ -10,11 +10,20 @@ export default function TestGround() {
     >
       <View style={styles.container}>
         <TextInput 
-          placeholder="Input Field" 
+          placeholder="Hello TextInput" 
           style={styles.input}
         />
 
         <Text>Hello</Text>
+        
+        <TextInput 
+          placeholder="Text Input 2" 
+          style={styles.input}/>
+    
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>Submit</Text>
+          
+        </TouchableOpacity>
       </View>
     </ImageBackground>
   );
@@ -35,5 +44,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 8,
     paddingHorizontal: 10,
+  },
+  button: {
+    marginTop: 20,
+    width: 150,
+    height: 40,
+    backgroundColor: '#007bff',
+    borderRadius: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
