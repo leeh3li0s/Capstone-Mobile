@@ -10,9 +10,11 @@ export default function TestGround() {
     >
       <View style={styles.container}>
         <TextInput 
-          placeholder="Enter text here" 
+          placeholder="Input Field" 
           style={styles.input}
         />
+
+        <Text>Hello</Text>
       </View>
     </ImageBackground>
   );
