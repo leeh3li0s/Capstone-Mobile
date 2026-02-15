@@ -93,6 +93,7 @@ export default function ViewAppointments() {
                 shadowOpacity: 0.1,
                 shadowRadius: 2,
                 elevation: 2,
+                
               }}
             >
               <TouchableOpacity onPress={() => openModal(item)}>
@@ -266,3 +267,4 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 });
+// 

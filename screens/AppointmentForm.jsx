@@ -350,3 +350,4 @@ const styles = StyleSheet.create({
   },
   continueButtonText: { fontSize: 18, color: 'white', fontWeight: 'bold' },
 });
+// 
