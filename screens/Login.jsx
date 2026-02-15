@@ -59,16 +59,18 @@ export default function Login() {
         // Use either email or username
         const useEmail = getEmail.trim() !== '';
         const useUsername = getUsername.trim() !== '';
+        const usePassword = getPassword.trim() !== '';
 
-        if (!useEmail && !useUsername) {
+        if (!useEmail && !useUsername && !usePassword) {
             setEmailError(true);
             setUsernameError(true);
+            setPasswordError(true);
             return;
         }
 
         const emailValid = useEmail ? validateEmailField() : true;
         const usernameValid = useUsername ? validateUsernameField() : true;
-        const passwordValid = validatePasswordField();
+        const passwordValid = usePassword ? validatePasswordField(): true;
 
         if (!passwordValid || !emailValid || !usernameValid) return;
 
@@ -261,7 +263,7 @@ const styles = StyleSheet.create({
 
     LoginContainer: {
         width: '80%',
-        height: '50%',
+        height: '60%',
         justifyContent: 'center',
         alignItems: 'center',
         gap: 5,

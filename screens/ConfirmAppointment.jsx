@@ -51,13 +51,15 @@ export default function ConfirmAppointment({ navigation }) {
     );
     
     // Navigate to ViewAppointments
-    navigation.reset({
-      index: 1,
-      routes: [
-        { name: 'Home', params: { screen: 'AppointmentServices' } },
-        { name: 'ViewAppointments' }
-      ]
-    });
+
+    navigation.navigate('ViewAppointments');
+    // navigation.reset({
+    //   index: 1,
+    //   routes: [
+    //     { name: 'Home', params: { screen: 'AppointmentServices' } },
+    //     { name: 'ViewAppointments' }
+    //   ]
+    // });
   };
 
   return (

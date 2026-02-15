@@ -83,6 +83,7 @@ export default function App() {
         <Stack.Screen name="BookingDetails" component={BookingDetails} />
         <Stack.Screen name="ConfirmAppointment" component={ConfirmAppointment} />
         <Stack.Screen name="Calendar" component={Calendar} />
+        <Stack.Screen name="ViewAppointments" component={ViewAppointments} />
       </Stack.Navigator>
     );
   }
