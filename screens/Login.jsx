@@ -77,6 +77,9 @@ export default function Login() {
         }
     };
     
+    const forgotPasswordHandler = () => {
+        nav.navigate('ForgotPassword')
+    }
     
     return (
     <ImageBackground
@@ -177,6 +180,28 @@ export default function Login() {
                     fontSize: 15,
                     fontWeight: 'bold',
                 }}>Login</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.button, {height: '3%', backgroundColor: 'none'}]}
+            onPress={forgotPasswordHandler}
+            >
+                <Text style={{
+                    color: '#007bff',
+                    fontSize: 12,
+                    fontWeight: 'bold'
+                }}>Forgot Password?</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.button, {
+                width: '60%',
+                height: '3%',
+                backgroundColor: 'none'}]}
+            onPress={forgotPasswordHandler}
+            >
+                <Text style={{
+                    color: '#ffffff',
+                    fontSize: 12,
+                }}>Dont have an account? Register </Text>
             </TouchableOpacity>
 
         </View>

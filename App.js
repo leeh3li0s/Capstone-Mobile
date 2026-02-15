@@ -17,7 +17,9 @@ import BookingDetails from './components/BookingDetails';
 import ConfirmAppointment from './screens/ConfirmAppointment';
 import Register from './screens/Register';
 import Login from './screens/Login';
+import ForgotPassword from './screens/ForgotPassword';
 import TestGround from './screens/TestGround';
+import ChangePassword from './screens/ChangePassword';
 
 import { AppointmentDetailsContext } from './context/AppointmentDetailsContext';
 import { AuthenticationContext } from './context/AuthenticationContext';
@@ -28,7 +30,7 @@ const Tab = createBottomTabNavigator();
 export default function App() {
 
   /* ---------------- AUTH STATE ---------------- */
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [getAuthenticationDetails, setAuthenticationDetails] = useState({
     email: '123',
@@ -152,6 +154,8 @@ export default function App() {
       <Stack.Navigator screenOptions={{ headerShown: false }}  initialRouteName="Register">
         <Stack.Screen name="Register" component={Register} />
         <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+        <Stack.Screen name="ChangePassword" component={ChangePassword} />
         <Stack.Screen name="TestGround" component={TestGround} />
       </Stack.Navigator>
     );
