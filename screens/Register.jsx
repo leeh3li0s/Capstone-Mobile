@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity} from 'react-native'
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground} from 'react-native'
 import React, {useContext, useState } from 'react'
 import { useNavigation } from '@react-navigation/native';
 import { AuthenticationContext } from '../context/AuthenticationContext';
@@ -14,6 +14,7 @@ export default function Register() {
     const [getUsername, setUsername] = useState('');
     const [getPassword, setPassword] = useState('');
     const [getConfirmPassword, setConfirmPassword] = useState('');
+    const [getLabel, setLabel] = useState('');
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const [emailError, setEmailError] = useState(false);
@@ -51,7 +52,7 @@ export default function Register() {
         }
 
         if (!isValid) {
-            alert('Please fill in all fields correctly.');
+            setLabel('Please fill in all fields correctly.');
             return;
         }
 
@@ -92,14 +93,23 @@ export default function Register() {
         
 
     return (
+        <ImageBackground
+            source={require('../assets/Background.png')}
+            style={{flex: 1}}
+            resizeMode="stretch"
+        >
     <View style={styles.mainComponent}  >
         <View style={styles.RegisterContainer}>
             <Text style={{
                 fontSize: 24,
-                fontWeight: 'bold',
-                marginBottom: 30,
+                fontWeight: 'bold'
             }}
             >Register</Text>
+            <Text style={{
+                color: 'red',
+                fontSize: 12,
+                marginBottom: 10,
+            }}>{getLabel}</Text>
 
             {/* Email Input */}
             {emailError && (
@@ -214,10 +224,11 @@ export default function Register() {
                     color: '#ffffff',
                     fontSize: 15,
                     fontWeight: 'bold',
-                }}>Login</Text>
+                }}>Register</Text>
             </TouchableOpacity>
         </View>
     </View>
+    </ImageBackground>
     )
 }
 
@@ -229,7 +240,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
 
-        backgroundColor: '#ebebeb',
     },
 
     RegisterContainer: {
@@ -242,7 +252,9 @@ const styles = StyleSheet.create({
         gap: 5,
 
         borderRadius: 10,
-        backgroundColor: '#ffffff',
+        backgroundColor: '#ffffff7c',
+        borderColor: '#ffffff73',
+        borderWidth: 1
         
     },
 
