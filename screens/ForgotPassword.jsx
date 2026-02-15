@@ -1,21 +1,14 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground } from 'react-native'
-import React, { useContext, useState } from 'react'
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground, ActivityIndicator } from 'react-native'
+import React, { useState } from 'react'
 import { useNavigation } from '@react-navigation/native';
-import { AuthenticationContext } from '../context/AuthenticationContext';
 
 export default function ForgotPassword() {
     const nav = useNavigation();
-    const getAuthData = useContext(AuthenticationContext);
 
     const [getEmail, setEmail] = useState('');
-    const [getUsername, setUsername] = useState('');
-    const [getPassword, setPassword] = useState('');
-    const [getConfirmPassword, setConfirmPassword] = useState('');
-
     const [emailError, setEmailError] = useState(false);
-    const [usernameError, setUsernameError] = useState(false);
-    const [passwordError, setPasswordError] = useState(false);
-    const [confirmError, setConfirmError] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [apiError, setApiError] = useState('');
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -36,37 +29,35 @@ export default function ForgotPassword() {
         return true;
     };
 
-    const validateUsernameField = () => {
-        if (!getUsername.trim()) {
-            setUsernameError(true);
-            return false;
-        }
-        setUsernameError(false);
-        return true;
-    };
+    const sendOTPHandler = async () => {
+        if (!validateEmailField()) return;
 
-    const validatePasswordField = () => {
-        if (!getPassword.trim()) {
-            setPasswordError(true);
-            return false;
-        }
-        setPasswordError(false);
-        return true;
-    };
+        setIsLoading(true);
+        setApiError('');
 
-    const validateConfirmPasswordField = () => {
-        if (!getConfirmPassword.trim()) {
-            setConfirmError(true);
-            return false;
-        }
-        
-        setConfirmError(false);
-        return true;
-    };
+        try {
+            const response = await fetch('http://localhost:5000/forgot-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: getEmail })
+            });
 
-    const validOTPHandler = () => {
-        
-        nav.navigate('ConfirmOTP');
+            const data = await response.json();
+
+            if (response.ok) {
+                // Navigate to OTP screen, passing the email
+                nav.navigate('ConfirmOTP', { email: getEmail });
+            } else {
+                setApiError(data.error || 'Failed to send OTP');
+            }
+        } catch (error) {
+            console.error('Send OTP error:', error);
+            setApiError('Network error. Please check your connection.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -93,6 +84,11 @@ export default function ForgotPassword() {
                     </Text>
                     </View>
 
+                    {/* API Error Message */}
+                    {apiError ? (
+                        <Text style={styles.apiErrorText}>{apiError}</Text>
+                    ) : null}
+
                     {/* EMAIL */}
                     {emailError && (
                         <Text style={styles.errorText}>
@@ -101,11 +97,12 @@ export default function ForgotPassword() {
                     )}
                     <TextInput
                         style={[styles.TextInputField, emailError && styles.errorInput]}
-                        placeholder="OTP"
+                        placeholder="Email"
                         value={getEmail}
                         onChangeText={(text) => {
                             setEmail(text);
                             if (emailError) setEmailError(false);
+                            setApiError('');
                         }}
                         onBlur={validateEmailField}
                         keyboardType="email-address"
@@ -114,9 +111,14 @@ export default function ForgotPassword() {
 
                     <TouchableOpacity
                         style={styles.button}
-                        onPress={validOTPHandler}
+                        onPress={sendOTPHandler}
+                        disabled={isLoading}
                     >
-                        <Text style={styles.buttonText}>Send OTP</Text>
+                        {isLoading ? (
+                            <ActivityIndicator color="#ffffff" />
+                        ) : (
+                            <Text style={styles.buttonText}>Send OTP</Text>
+                        )}
                     </TouchableOpacity>
                 </View>
             </View>
@@ -150,7 +152,6 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderRadius: 10,
         paddingHorizontal: 10,
-
         borderColor: '#ffffff',
         backgroundColor: '#ffffff7c',
     },
@@ -165,6 +166,17 @@ const styles = StyleSheet.create({
         fontSize: 10,
         width: '80%',
         paddingLeft: 5,
+    },
+
+    apiErrorText: {
+        color: 'red',
+        fontSize: 12,
+        width: '80%',
+        textAlign: 'center',
+        marginBottom: 5,
+        backgroundColor: '#ffebee',
+        padding: 8,
+        borderRadius: 5,
     },
 
     button: {

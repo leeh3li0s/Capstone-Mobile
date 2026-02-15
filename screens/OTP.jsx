@@ -2,73 +2,53 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground, A
 import React, { useState } from 'react'
 import { useNavigation, useRoute } from '@react-navigation/native';
 
-export default function ChangePassword() {
+export default function ConfirmOTP() {
     const nav = useNavigation();
     const route = useRoute();
-    const { email, otp } = route.params || {};
+    const { email } = route.params || {};
 
-    const [getNewPassword, setNewPassword] = useState('');
-    const [getConfirmPassword, setConfirmPassword] = useState('');
-    
-    const [passwordError, setPasswordError] = useState(false);
-    const [confirmError, setConfirmError] = useState(false);
+    const [getOTP, setOTP] = useState('');
+    const [otpError, setOtpError] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState('');
 
-    const validatePasswordField = () => {
-        if (!getNewPassword.trim() || getNewPassword.length < 6) {
-            setPasswordError(true);
+    const validateOTPField = () => {
+        if (!getOTP.trim() || getOTP.length !== 6) {
+            setOtpError(true);
             return false;
         }
-        setPasswordError(false);
+        setOtpError(false);
         return true;
     };
 
-    const validateConfirmPasswordField = () => {
-        if (!getConfirmPassword.trim()) {
-            setConfirmError(true);
-            return false;
-        }
-        if (getConfirmPassword !== getNewPassword) {
-            setConfirmError(true);
-            return false;
-        }
-        setConfirmError(false);
-        return true;
-    };
-
-    const changePasswordHandler = async () => {
-        const passwordValid = validatePasswordField();
-        const confirmValid = validateConfirmPasswordField();
-
-        if (!passwordValid || !confirmValid) return;
+    const verifyOTPHandler = async () => {
+        if (!validateOTPField()) return;
 
         setIsLoading(true);
         setApiError('');
 
         try {
-            const response = await fetch('http://localhost:5000/reset-password', {
+            const response = await fetch('http://localhost:5000/verify-otp', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ 
                     email: email,
-                    otp: otp,
-                    newPassword: getNewPassword
+                    otp: getOTP 
                 })
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                alert('Password changed successfully! Please login with your new password.');
-                nav.navigate('Login');
+                
+                nav.navigate('ChangePassword', { email: email, otp: getOTP });
             } else {
-                setApiError(data.error || 'Failed to reset password');
+                setApiError(data.error || 'Invalid OTP');
             }
         } catch (error) {
-            console.error('Reset password error:', error);
+            console.error('Verify OTP error:', error);
             setApiError('Network error. Please check your connection.');
         } finally {
             setIsLoading(false);
@@ -83,7 +63,7 @@ export default function ChangePassword() {
         >
             <View style={styles.mainComponent}>
                 
-                <View style={styles.ChangePasswordContainer}>
+                <View style={styles.OTPContainer}>
                     <View style={{
                         justifyContent: 'center',
                         alignItems: 'center',
@@ -91,11 +71,11 @@ export default function ChangePassword() {
                         marginBottom: 40
                         }}>
                         <Text style={{ fontSize: 24, fontWeight: 'bold'}}>
-                        Change Password
+                        Confirm OTP
                     </Text>
 
                     <Text style={{ fontSize: 12, width: '90%', textAlign: 'center' }}>
-                        Please enter your new password.
+                        Please enter the OTP sent to your email.
                     </Text>
                     </View>
 
@@ -104,53 +84,35 @@ export default function ChangePassword() {
                         <Text style={styles.apiErrorText}>{apiError}</Text>
                     ) : null}
 
-                    {/* NEW PASSWORD */}
-                    {passwordError && (
+                    {/* OTP Input */}
+                    {otpError && (
                         <Text style={styles.errorText}>
-                            Password must be at least 6 characters.
+                            Please enter a valid 6-digit OTP.
                         </Text>
                     )}
                     <TextInput
-                        style={[styles.TextInputField, passwordError && styles.errorInput]}
-                        placeholder="New Password"
-                        secureTextEntry
-                        value={getNewPassword}
+                        style={[styles.TextInputField, otpError && styles.errorInput]}
+                        placeholder="Enter 6-digit OTP"
+                        value={getOTP}
                         onChangeText={(text) => {
-                            setNewPassword(text);
-                            if (passwordError) setPasswordError(false);
+                            setOTP(text.replace(/[^0-9]/g, '')); // Only allow numbers
+                            if (otpError) setOtpError(false);
                             setApiError('');
                         }}
-                        onBlur={validatePasswordField}
-                    />
-
-                    {/* CONFIRM NEW PASSWORD */}
-                    {confirmError && (
-                        <Text style={styles.errorText}>
-                            Passwords do not match.
-                        </Text>
-                    )}
-                    <TextInput
-                        style={[styles.TextInputField, confirmError && styles.errorInput]}
-                        placeholder="Confirm New Password"
-                        secureTextEntry
-                        value={getConfirmPassword}
-                        onChangeText={(text) => {
-                            setConfirmPassword(text);
-                            if (confirmError) setConfirmError(false);
-                            setApiError('');
-                        }}
-                        onBlur={validateConfirmPasswordField}
+                        onBlur={validateOTPField}
+                        keyboardType="numeric"
+                        maxLength={6}
                     />
 
                     <TouchableOpacity
                         style={styles.button}
-                        onPress={changePasswordHandler}
+                        onPress={verifyOTPHandler}
                         disabled={isLoading}
                     >
                         {isLoading ? (
                             <ActivityIndicator color="#ffffff" />
                         ) : (
-                            <Text style={styles.buttonText}>Change Password</Text>
+                            <Text style={styles.buttonText}>Verify OTP</Text>
                         )}
                     </TouchableOpacity>
                 </View>
@@ -166,9 +128,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 
-    ChangePasswordContainer: {
+    OTPContainer: {
         width: '80%',
-        height: '45%',
+        height: '40%',
         justifyContent: 'center',
         alignItems: 'center',
         gap: 5,
@@ -214,7 +176,7 @@ const styles = StyleSheet.create({
 
     button: {
         marginTop: 15,
-        width: '50%',
+        width: '40%',
         height: '8%',
         backgroundColor: '#007bff',
         borderRadius: 15,

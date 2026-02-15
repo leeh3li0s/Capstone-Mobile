@@ -10,6 +10,7 @@ export default function Login() {
     const [getEmail, setEmail] = useState('');
     const [getUsername, setUsername] = useState('');
     const [getPassword, setPassword] = useState('');
+    const [getLabel, setLabel] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     const [emailError, setEmailError] = useState(false);
@@ -96,10 +97,10 @@ export default function Login() {
             const data = await response.json();
 
             if (response.ok) {
-                alert('Login successful!');
                 setIsLoggedIn(true); // This triggers navigation to Home
             } else {
-                alert(data.error || 'Login failed');
+                setLabel(data.message || 'Login failed. Please check your credentials.');
+                alert(data.message || 'Login failed. Please check your credentials.');
             }
         } catch (error) {
             console.error('Login error:', error);
@@ -138,6 +139,9 @@ export default function Login() {
                         </Text>
                     </View>
                     
+                    <Text style={{ fontSize: 12, width: '90%', textAlign: 'center', color: 'red' }}>
+                            {getLabel}
+                        </Text>
 
                     {emailError && (
                     <Text style={{
@@ -232,7 +236,7 @@ export default function Login() {
                         width: '60%',
                         height: '3%',
                         backgroundColor: 'none'}]}
-                    onPress={forgotPasswordHandler}
+                    onPress={() => nav.navigate('Register')}
                     >
                         <Text style={{
                             color: '#ffffff',
