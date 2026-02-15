@@ -287,6 +287,197 @@ app.post('/login', async (req, res) => {
     console.error('Login error:', err);
     res.status(500).json({ error: err.message });
   }
+
+
+ // ==================== APPOINTMENT ROUTES ====================
+
+// Create new appointment
+app.post('/appointments', async (req, res) => {
+  console.log('Received appointment data:', req.body);
+  
+  const {
+    user_id,
+    appointment_type,
+    appointment_date,
+    appointment_time,
+    patient_name,
+    patient_phone,
+    patient_email,
+    patient_reason,
+    pet_name,
+    pet_species,
+    pet_gender,
+    pet_breed
+  } = req.body;
+
+  // Basic validation
+  if (!user_id || !appointment_type || !appointment_date || !appointment_time) {
+    console.log('Missing required fields:', { user_id, appointment_type, appointment_date, appointment_time });
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  try {
+    // Format the time for PostgreSQL (expects HH:MM:SS format)
+    let formattedTime = appointment_time;
+    
+    // Check if time is in "12:00 PM" format and convert to "12:00:00"
+    if (appointment_time && appointment_time.includes(' ')) {
+      const [time, modifier] = appointment_time.split(' ');
+      let [hours, minutes] = time.split(':');
+      
+      // Convert to 24-hour format
+      if (modifier === 'PM' && hours !== '12') {
+        hours = parseInt(hours, 10) + 12;
+      }
+      if (modifier === 'AM' && hours === '12') {
+        hours = '00';
+      }
+      
+      // Pad hours with leading zero if needed
+      hours = hours.toString().padStart(2, '0');
+      
+      // Format as HH:MM:SS
+      formattedTime = `${hours}:${minutes}:00`;
+      console.log('Formatted time:', formattedTime);
+    }
+
+    const result = await pool.query(
+      `INSERT INTO appointments (
+        user_id, 
+        appointment_type, 
+        appointment_date, 
+        appointment_time, 
+        patient_name, 
+        patient_phone, 
+        patient_email, 
+        patient_reason, 
+        pet_name, 
+        pet_species, 
+        pet_gender, 
+        pet_breed
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+      RETURNING *`,
+      [
+        user_id,
+        appointment_type,
+        appointment_date,
+        formattedTime, // Use formatted time
+        patient_name || '',
+        patient_phone || '',
+        patient_email || '',
+        patient_reason || '',
+        pet_name || '',
+        pet_species || '',
+        pet_gender || '',
+        pet_breed || ''
+      ]
+    );
+
+    console.log('Appointment created:', result.rows[0]);
+    res.status(201).json({ 
+      success: true, 
+      message: 'Appointment created successfully',
+      appointment: result.rows[0] 
+    });
+  } catch (error) {
+    console.error('Create appointment error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get appointments for a specific user
+app.get('/appointments/user/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  // Validate userId
+  if (!userId) {
+    return res.status(400).json({ error: 'User ID is required' });
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT * FROM appointments 
+       WHERE user_id = $1 
+       ORDER BY appointment_date DESC, appointment_time DESC`,
+      [userId]
+    );
+
+    // Format the time back to 12-hour format for display if needed
+    const appointments = result.rows.map(appointment => {
+      if (appointment.appointment_time) {
+        // Convert from HH:MM:SS to HH:MM AM/PM
+        const timeStr = appointment.appointment_time;
+        const [hours, minutes] = timeStr.split(':');
+        let hour = parseInt(hours, 10);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        
+        if (hour > 12) {
+          hour = hour - 12;
+        } else if (hour === 0) {
+          hour = 12;
+        }
+        
+        appointment.appointment_time_display = `${hour}:${minutes} ${ampm}`;
+      }
+      return appointment;
+    });
+
+    res.json({ 
+      success: true, 
+      appointments: appointments 
+    });
+  } catch (error) {
+    console.error('Get appointments error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Optional: Get all appointments (with optional date filter)
+app.get('/appointments', async (req, res) => {
+  const { date } = req.query;
+  
+  try {
+    let query = 'SELECT * FROM appointments ORDER BY appointment_date DESC, appointment_time DESC';
+    let params = [];
+    
+    if (date) {
+      query = 'SELECT * FROM appointments WHERE appointment_date = $1 ORDER BY appointment_time';
+      params = [date];
+    }
+    
+    const result = await pool.query(query, params);
+    
+    // Format times for display
+    const appointments = result.rows.map(appointment => {
+      if (appointment.appointment_time) {
+        const timeStr = appointment.appointment_time;
+        const [hours, minutes] = timeStr.split(':');
+        let hour = parseInt(hours, 10);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        
+        if (hour > 12) {
+          hour = hour - 12;
+        } else if (hour === 0) {
+          hour = 12;
+        }
+        
+        appointment.appointment_time_display = `${hour}:${minutes} ${ampm}`;
+      }
+      return appointment;
+    });
+    
+    res.json({ 
+      success: true, 
+      appointments: appointments 
+    });
+  } catch (error) {
+    console.error('Get all appointments error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+//Start server
 });
 
 const PORT = process.env.PORT || 5000;

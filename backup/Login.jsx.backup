@@ -5,12 +5,11 @@ import { useNavigation } from '@react-navigation/native';
 
 export default function Login() {
     const nav = useNavigation();
-    const { setIsLoggedIn, setAuthenticationDetails } = useContext(AuthenticationContext); // Only need this
+    const { setIsLoggedIn } = useContext(AuthenticationContext); // Only need this
 
     const [getEmail, setEmail] = useState('');
     const [getUsername, setUsername] = useState('');
     const [getPassword, setPassword] = useState('');
-    const [getLabel, setLabel] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     const [emailError, setEmailError] = useState(false);
@@ -59,18 +58,16 @@ export default function Login() {
         // Use either email or username
         const useEmail = getEmail.trim() !== '';
         const useUsername = getUsername.trim() !== '';
-        const usePassword = getPassword.trim() !== '';
 
-        if (!useEmail && !useUsername && !usePassword) {
+        if (!useEmail && !useUsername) {
             setEmailError(true);
             setUsernameError(true);
-            setPasswordError(true);
             return;
         }
 
         const emailValid = useEmail ? validateEmailField() : true;
         const usernameValid = useUsername ? validateUsernameField() : true;
-        const passwordValid = usePassword ? validatePasswordField(): true;
+        const passwordValid = validatePasswordField();
 
         if (!passwordValid || !emailValid || !usernameValid) return;
 
@@ -99,20 +96,10 @@ export default function Login() {
             const data = await response.json();
 
             if (response.ok) {
-                // FIX: Update authentication details with actual user data from backend
-                setAuthenticationDetails({
-                    email: data.user.email,
-                    username: data.user.username,
-                    pk: data.user.pk,
-                    fullname: data.user.fullname,
-                    password: '', // Clear these for security
-                    confirmPassword: '',
-                });
-                
+                alert('Login successful!');
                 setIsLoggedIn(true); // This triggers navigation to Home
             } else {
-                setLabel(data.message || 'Login failed. Please check your credentials.');
-                alert(data.message || 'Login failed. Please check your credentials.');
+                alert(data.error || 'Login failed');
             }
         } catch (error) {
             console.error('Login error:', error);
@@ -121,20 +108,14 @@ export default function Login() {
             setIsLoading(false);
         }
     };
-
     
-    
-    const forgotPasswordHandler = () => {
-        nav.navigate('ForgotPassword')
-    }
-    
+    // Your EXACT same UI
     return (
         <ImageBackground
             source={require('../assets/Background.png')}
             style={{flex: 1}}
             resizeMode="stretch"
         >
-    
             <View style={styles.mainComponent}>
                 <View style={styles.LoginContainer}>
                     <View style={{
@@ -151,19 +132,10 @@ export default function Login() {
                             Welcome back! Please enter your credentials to access your account.
                         </Text>
                     </View>
-                    
-                    <Text style={{ fontSize: 12, width: '90%', textAlign: 'center', color: 'red' }}>
-                            {getLabel}
-                        </Text>
 
                     {emailError && (
-                    <Text style={{
-                            color: 'red',
-                            fontSize: 10,
-                            width: '80%',
-                            paddingLeft: 5
-                            }}>
-                        Please enter your email.
+                        <Text style={styles.errorText}>
+                            Please enter your email.
                         </Text>
                     )}
                     <TextInput
@@ -171,21 +143,18 @@ export default function Login() {
                             styles.TextInputField,
                             emailError && { borderColor: 'red', borderWidth: 2 },
                         ]}
-                        placeholder='Email'
+                        placeholder="Email"
                         value={getEmail}
                         onChangeText={(text) => {
                             setEmail(text);
                             if (emailError) setEmailError(false);
                         }}
-                        onBlur={validateEmailField}/>
+                        onBlur={validateEmailField}
+                    />
+
                     {usernameError && (
-                    <Text style={{
-                            color: 'red',
-                            fontSize: 10,
-                            width: '80%',
-                            paddingLeft: 5
-                            }}>
-                        Please enter your username.
+                        <Text style={styles.errorText}>
+                            Please enter your username.
                         </Text>
                     )}
                     <TextInput
@@ -193,21 +162,18 @@ export default function Login() {
                             styles.TextInputField,
                             usernameError && { borderColor: 'red', borderWidth: 2 },
                         ]}
-                        placeholder='Username'
+                        placeholder="Username"
                         value={getUsername}
                         onChangeText={(text) => {
                             setUsername(text);
                             if (usernameError) setUsernameError(false);
                         }}
-                        onBlur={validateUsernameField}/>
+                        onBlur={validateUsernameField}
+                    />
+
                     {passwordError && (
-                    <Text style={{
-                            color: 'red',
-                            fontSize: 10,
-                            width: '80%',
-                            paddingLeft: 5
-                            }}>
-                        Please enter your password.
+                        <Text style={styles.errorText}>
+                            Please enter your password.
                         </Text>
                     )}
                     <TextInput
@@ -215,52 +181,30 @@ export default function Login() {
                             styles.TextInputField,
                             passwordError && { borderColor: 'red', borderWidth: 2 },
                         ]}
-                        placeholder='Password'
+                        placeholder="Password"
                         secureTextEntry
                         value={getPassword}
                         onChangeText={(text) => {
                             setPassword(text);
                             if (passwordError) setPasswordError(false);
                         }}
-                        onBlur={validatePasswordField}/>
-                    
+                        onBlur={validatePasswordField}
+                    />
 
-                    <TouchableOpacity style={styles.button}
-                    onPress={loginHandler}
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={loginHandler}
+                        disabled={isLoading}
                     >
-                        <Text style={{
-                            color: '#ffffff',
-                            fontSize: 15,
-                            fontWeight: 'bold',
-                        }}>Login</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={[styles.button, {height: '3%', backgroundColor: 'none'}]}
-                    onPress={forgotPasswordHandler}
-                    >
-                        <Text style={{
-                            color: '#007bff',
-                            fontSize: 12,
-                            fontWeight: 'bold'
-                        }}>Forgot Password?</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={[styles.button, {
-                        width: '60%',
-                        height: '3%',
-                        backgroundColor: 'none'}]}
-                    onPress={() => nav.navigate('Register')}
-                    >
-                        <Text style={{
-                            color: '#ffffff',
-                            fontSize: 12,
-                        }}>Dont have an account? Register </Text>
+                        {isLoading ? (
+                            <ActivityIndicator color="#ffffff" />
+                        ) : (
+                            <Text style={styles.buttonText}>Login</Text>
+                        )}
                     </TouchableOpacity>
                 </View>
-
-        
-    </View>
-    </ImageBackground>
+            </View>
+        </ImageBackground>
     )
 }
 
@@ -274,7 +218,7 @@ const styles = StyleSheet.create({
 
     LoginContainer: {
         width: '80%',
-        height: '60%',
+        height: '50%',
         justifyContent: 'center',
         alignItems: 'center',
         gap: 5,

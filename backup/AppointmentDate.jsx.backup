@@ -1,59 +1,73 @@
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { AppointmentDetailsContext } from '../context/AppointmentDetailsContext';
 import { useContext, useState, useEffect } from 'react';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { Calendar } from 'react-native-calendars';
 import MobileStylesheet from '../styles/MobileStylesheet';
 
 export default function AppointmentDate() {
+  const { getAppointmentDetails, setAppointmentDetails } = useContext(AppointmentDetailsContext);
   const nav = useNavigation();
-  const route = useRoute();
-  const { service } = route.params; // Get service from previous screen
 
-  // Initialize state
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
+  // Initialize state from context to preserve selections
+  const [selectedDate, setSelectedDate] = useState(getAppointmentDetails.appointmentDate || '');
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState(getAppointmentDetails.appointmentTimeSlot || '');
 
   // Modal state
   const [showCancelModal, setShowCancelModal] = useState(false);
 
+  // Update context whenever selections change (optional, or save only on Next)
   const handleDateSelect = (day) => {
-    setSelectedDate(day.dateString);
+    const newDate = day.dateString;
+    setSelectedDate(newDate);
+    // Update context immediately to preserve state
+    setAppointmentDetails(prev => ({
+      ...prev,
+      appointmentDate: newDate
+    }));
   };
 
-  // In AppointmentDate.jsx, update the timeSlots array
-const timeSlots = [
-  '12:00 PM',
-  '1:00 PM',
-  '2:00 PM'
-];
+  const handleTimeSelect = (slot) => {
+    setSelectedTimeSlot(slot);
+    // Update context immediately to preserve state
+    setAppointmentDetails(prev => ({
+      ...prev,
+      appointmentTimeSlot: slot
+    }));
+  };
 
-// When selecting a time slot
-const handleTimeSelect = (slot) => {
-  setSelectedTimeSlot(slot);
-};
+  const handleNext = () => {
+    // Ensure context has the latest selections (though they should already be updated)
+    setAppointmentDetails(prev => ({
+      ...prev,
+      appointmentDate: selectedDate,
+      appointmentTimeSlot: selectedTimeSlot
+    }));
+    nav.navigate('AppointmentForm');
+  };
 
-// When navigating to next screen
-const handleNext = () => {
-  nav.navigate('AppointmentForm', {
-    service: service,
-    appointmentDate: selectedDate,
-    appointmentTimeSlot: selectedTimeSlot  // This will be just "12:00 PM"
-  });
-};
+  const timeSlots = [
+    '12:00 PM - 1:00 PM',
+    '1:00 PM - 2:00 PM',
+    '2:00 PM - 3:00 PM'
+  ];
 
   const backHandler = () => {
-    if (selectedDate || selectedTimeSlot) {
-      setShowCancelModal(true);
-    } else {
-      nav.goBack();
-    }
+    // Check if we have any unsaved changes in the form context
+    // For now, just go back
+    nav.goBack();
   };
 
   const confirmCancel = () => {
     setShowCancelModal(false);
     nav.goBack();
   };
+
+  // Update local state when context changes (e.g., when coming back from form)
+  useEffect(() => {
+    setSelectedDate(getAppointmentDetails.appointmentDate || '');
+    setSelectedTimeSlot(getAppointmentDetails.appointmentTimeSlot || '');
+  }, [getAppointmentDetails.appointmentDate, getAppointmentDetails.appointmentTimeSlot]);
 
   return (
     <View style={[MobileStylesheet.mainContainer, {
@@ -143,7 +157,7 @@ const handleNext = () => {
         textAlign: 'center',
         color: '#a1a1a1'
       }}>
-        Select your preferred time and date for the {service?.toLowerCase() || 'your'} appointment.
+        Select your preferred time and date for the appointment.
       </Text>
 
       {/* Calendar */}
@@ -152,7 +166,7 @@ const handleNext = () => {
         justifyContent: 'center',
         alignItems: 'center',
         width: '100%'
-      }}>
+        }}>
         <Calendar
           theme={{
             backgroundColor: 'transparent',

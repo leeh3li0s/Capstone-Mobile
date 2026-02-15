@@ -2,26 +2,35 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import MobileStylesheet from '../styles/MobileStylesheet';
 import { useNavigation } from '@react-navigation/native';
 import { useContext } from 'react';
-import { AuthenticationContext } from '../context/AuthenticationContext';
+import { AppointmentDetailsContext } from '../context/AppointmentDetailsContext';
 
 export default function AppointmentServices() {
   const nav = useNavigation();
-  const { getAuthenticationDetails } = useContext(AuthenticationContext);
+  const getData = useContext(AppointmentDetailsContext);
+  const service = getData.getAppointmentDetails.service;
 
   const handleServiceSelection = (selectedService) => {
-    nav.navigate('AppointmentDate', {
-      service: selectedService
-    });
+    getData.setAppointmentDetails((prevDetails) => ({
+      ...prevDetails,
+      service: selectedService,
+    }));
+    nav.navigate('AppointmentDate');
   };
 
   const renderServiceButton = (label) => (
     <TouchableOpacity
       style={[
         MobileStylesheet.Services,
+        service === label && styles.selectedService, // apply selected style
       ]}
       onPress={() => handleServiceSelection(label)}
     >
-      <Text style={styles.serviceText}>
+      <Text
+        style={[
+          styles.serviceText,
+          service === label && styles.selectedText, // apply selected text style
+        ]}
+      >
         {label}
       </Text>
     </TouchableOpacity>
@@ -31,9 +40,7 @@ export default function AppointmentServices() {
     <View style={MobileStylesheet.mainContainer}>
       <View style={styles.HeaderContainer}>
         <Text style={styles.HeaderText}>Services</Text>
-        <Text style={styles.SubheaderText}>
-          Welcome, {getAuthenticationDetails?.username || 'Guest'}! What kind of service do you want to avail?
-        </Text>
+        <Text>What kind of service do you want to avail?</Text>
       </View>
 
       <View style={MobileStylesheet.AppointmentServicesContainer}>
@@ -54,21 +61,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#ffffff',
     marginTop: 30,
-    paddingHorizontal: 20,
   },
   HeaderText: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 5,
   },
   SubheaderText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#797979',
-    textAlign: 'center',
   },
   serviceText: {
     textAlign: 'center',
     width: '60%',
-    color: '#000',
+    color: '#000', // default black text
+  },
+  selectedService: {
+    backgroundColor: '#007BFF', // blue background when selected
+  },
+  selectedText: {
+    color: '#fff', // white text when selected
+    fontWeight: 'bold',
   },
 });
