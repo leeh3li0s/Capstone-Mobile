@@ -109,13 +109,18 @@ export default function Login() {
         }
     };
     
-    // Your EXACT same UI
+    
+    const forgotPasswordHandler = () => {
+        nav.navigate('ForgotPassword')
+    }
+    
     return (
         <ImageBackground
             source={require('../assets/Background.png')}
             style={{flex: 1}}
             resizeMode="stretch"
         >
+    
             <View style={styles.mainComponent}>
                 <View style={styles.LoginContainer}>
                     <View style={{
@@ -132,10 +137,16 @@ export default function Login() {
                             Welcome back! Please enter your credentials to access your account.
                         </Text>
                     </View>
+                    
 
                     {emailError && (
-                        <Text style={styles.errorText}>
-                            Please enter your email.
+                    <Text style={{
+                            color: 'red',
+                            fontSize: 10,
+                            width: '80%',
+                            paddingLeft: 5
+                            }}>
+                        Please enter your email.
                         </Text>
                     )}
                     <TextInput
@@ -143,18 +154,21 @@ export default function Login() {
                             styles.TextInputField,
                             emailError && { borderColor: 'red', borderWidth: 2 },
                         ]}
-                        placeholder="Email"
+                        placeholder='Email'
                         value={getEmail}
                         onChangeText={(text) => {
                             setEmail(text);
                             if (emailError) setEmailError(false);
                         }}
-                        onBlur={validateEmailField}
-                    />
-
+                        onBlur={validateEmailField}/>
                     {usernameError && (
-                        <Text style={styles.errorText}>
-                            Please enter your username.
+                    <Text style={{
+                            color: 'red',
+                            fontSize: 10,
+                            width: '80%',
+                            paddingLeft: 5
+                            }}>
+                        Please enter your username.
                         </Text>
                     )}
                     <TextInput
@@ -162,18 +176,21 @@ export default function Login() {
                             styles.TextInputField,
                             usernameError && { borderColor: 'red', borderWidth: 2 },
                         ]}
-                        placeholder="Username"
+                        placeholder='Username'
                         value={getUsername}
                         onChangeText={(text) => {
                             setUsername(text);
                             if (usernameError) setUsernameError(false);
                         }}
-                        onBlur={validateUsernameField}
-                    />
-
+                        onBlur={validateUsernameField}/>
                     {passwordError && (
-                        <Text style={styles.errorText}>
-                            Please enter your password.
+                    <Text style={{
+                            color: 'red',
+                            fontSize: 10,
+                            width: '80%',
+                            paddingLeft: 5
+                            }}>
+                        Please enter your password.
                         </Text>
                     )}
                     <TextInput
@@ -181,30 +198,52 @@ export default function Login() {
                             styles.TextInputField,
                             passwordError && { borderColor: 'red', borderWidth: 2 },
                         ]}
-                        placeholder="Password"
+                        placeholder='Password'
                         secureTextEntry
                         value={getPassword}
                         onChangeText={(text) => {
                             setPassword(text);
                             if (passwordError) setPasswordError(false);
                         }}
-                        onBlur={validatePasswordField}
-                    />
+                        onBlur={validatePasswordField}/>
+                    
 
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={loginHandler}
-                        disabled={isLoading}
+                    <TouchableOpacity style={styles.button}
+                    onPress={loginHandler}
                     >
-                        {isLoading ? (
-                            <ActivityIndicator color="#ffffff" />
-                        ) : (
-                            <Text style={styles.buttonText}>Login</Text>
-                        )}
+                        <Text style={{
+                            color: '#ffffff',
+                            fontSize: 15,
+                            fontWeight: 'bold',
+                        }}>Login</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={[styles.button, {height: '3%', backgroundColor: 'none'}]}
+                    onPress={forgotPasswordHandler}
+                    >
+                        <Text style={{
+                            color: '#007bff',
+                            fontSize: 12,
+                            fontWeight: 'bold'
+                        }}>Forgot Password?</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={[styles.button, {
+                        width: '60%',
+                        height: '3%',
+                        backgroundColor: 'none'}]}
+                    onPress={forgotPasswordHandler}
+                    >
+                        <Text style={{
+                            color: '#ffffff',
+                            fontSize: 12,
+                        }}>Dont have an account? Register </Text>
                     </TouchableOpacity>
                 </View>
-            </View>
-        </ImageBackground>
+
+        
+    </View>
+    </ImageBackground>
     )
 }
 

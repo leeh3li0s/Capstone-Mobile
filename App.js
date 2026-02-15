@@ -17,8 +17,10 @@ import BookingDetails from './components/BookingDetails';
 import ConfirmAppointment from './screens/ConfirmAppointment';
 import Register from './screens/Register';
 import Login from './screens/Login';
+import ForgotPassword from './screens/ForgotPassword';
 import TestGround from './screens/TestGround';
-
+import ChangePassword from './screens/ChangePassword';
+import ConfirmOTP from './screens/OTP';
 // Import contexts
 import { AppointmentDetailsContext } from './context/AppointmentDetailsContext';
 import { AuthenticationContext } from './context/AuthenticationContext';
@@ -141,9 +143,12 @@ export default function App() {
 
   function AuthStackNavigator() {
     return (
-      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Register">
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Login">
         <Stack.Screen name="Register" component={Register} />
         <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+        <Stack.Screen name="ConfirmOTP" component={ConfirmOTP} />
+        <Stack.Screen name="ChangePassword" component={ChangePassword} />
         <Stack.Screen name="TestGround" component={TestGround} />
       </Stack.Navigator>
     );
