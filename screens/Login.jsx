@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity} from 'react-native'
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground} from 'react-native'
 import React, { useContext, useState } from 'react'
 import { AuthenticationContext } from '../context/AuthenticationContext'
 import { useNavigation } from '@react-navigation/native';
@@ -79,6 +79,11 @@ export default function Login() {
     
     
     return (
+    <ImageBackground
+                source={require('../assets/Background.png')}
+                style={{flex: 1}}
+                resizeMode="stretch"
+            >
     <View style={styles.mainComponent}  >
         <View style={styles.RegisterContainer}>
             <Text style={{
@@ -177,6 +182,7 @@ export default function Login() {
 
         </View>
     </View>
+    </ImageBackground>
     )
 }
 
@@ -188,7 +194,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
 
-        backgroundColor: '#ebebeb',
     },
 
     RegisterContainer: {
