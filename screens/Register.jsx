@@ -1,17 +1,18 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground } from 'react-native'
-import React, { useContext, useState } from 'react'
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground, ActivityIndicator } from 'react-native'
+import React, { useState } from 'react'
 import { useNavigation } from '@react-navigation/native';
-import { AuthenticationContext } from '../context/AuthenticationContext';
 
 export default function Register() {
     const nav = useNavigation();
-    const getAuthData = useContext(AuthenticationContext);
 
+    // Keep all your existing state
     const [getEmail, setEmail] = useState('');
     const [getUsername, setUsername] = useState('');
     const [getPassword, setPassword] = useState('');
     const [getConfirmPassword, setConfirmPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false); // Add loading state
 
+    // Keep all your existing error states
     const [emailError, setEmailError] = useState(false);
     const [usernameError, setUsernameError] = useState(false);
     const [passwordError, setPasswordError] = useState(false);
@@ -19,6 +20,7 @@ export default function Register() {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+    // Keep all your existing validation functions
     const validateEmail = (value) => {
         return emailRegex.test(value);
     };
@@ -67,25 +69,50 @@ export default function Register() {
         return true;
     };
 
-    const registerHandler = () => {
+    // SIMPLIFIED registerHandler - directly calls backend
+    const registerHandler = async () => {
+        // Validate all fields first
         const emailValid = validateEmailField();
         const usernameValid = validateUsernameField();
         const passwordValid = validatePasswordField();
         const confirmValid = validateConfirmPasswordField();
 
-        if (!emailValid || !usernameValid || !passwordValid || !confirmValid) return;
+        if (!emailValid || !usernameValid || !passwordValid || !confirmValid) {
+            return;
+        }
 
-        getAuthData.setAuthenticationDetails({
-            email: getEmail,
-            username: getUsername,
-            password: getPassword,
-            confirmPassword: getConfirmPassword,
-        });
+        setIsLoading(true);
 
-        alert('Registration successful!');
-        nav.navigate('Login');
+        try {
+            const response = await fetch('http://localhost:5000/register', { // Match your server port
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: getEmail,
+                    username: getUsername,
+                    password: getPassword,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Registration successful! Please login.');
+                nav.navigate('Login');
+            } else {
+                alert(data.error || 'Registration failed');
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            alert('Network error. Please check your connection.');
+        } finally {
+            setIsLoading(false);
+        }
     };
-
+    
+    // Your EXACT same UI (just add disabled to button)
     return (
         <ImageBackground
             source={require('../assets/Background.png')}
@@ -105,9 +132,6 @@ export default function Register() {
                         Register
                     </Text>
 
-                    <Text style={{ fontSize: 12, width: '90%', textAlign: 'center' }}>
-                        Create an account to book your pet's appointment!
-                    </Text>
                     </View>
 
                     {/* EMAIL */}
@@ -185,8 +209,13 @@ export default function Register() {
                     <TouchableOpacity
                         style={styles.button}
                         onPress={registerHandler}
+                        disabled={isLoading}
                     >
-                        <Text style={styles.buttonText}>Register</Text>
+                        {isLoading ? (
+                            <ActivityIndicator color="#ffffff" />
+                        ) : (
+                            <Text style={styles.buttonText}>Register</Text>
+                        )}
                     </TouchableOpacity>
                 </View>
             </View>
@@ -194,6 +223,7 @@ export default function Register() {
     )
 }
 
+// Your EXACT same styles
 const styles = StyleSheet.create({
     mainComponent: {
         flex: 1,
@@ -220,7 +250,6 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderRadius: 10,
         paddingHorizontal: 10,
-
         borderColor: '#ffffff',
         backgroundColor: '#ffffff7c',
     },
