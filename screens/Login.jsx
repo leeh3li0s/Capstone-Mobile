@@ -85,13 +85,21 @@ export default function Login() {
                 resizeMode="stretch"
             >
     <View style={styles.mainComponent}  >
-        <View style={styles.RegisterContainer}>
-            <Text style={{
-                fontSize: 24,
-                fontWeight: 'bold',
-                marginBottom: 30,
-            }}
-            >Login</Text>
+        <View style={styles.LoginContainer}>
+            <View style={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: 5,
+                marginBottom: 40
+                }}>
+                <Text style={{ fontSize: 24, fontWeight: 'bold'}}>
+                Login
+                </Text>
+
+                <Text style={{ fontSize: 12, width: '90%', textAlign: 'center', }}>
+                    Welcome back! Please enter your credentials to access your account.
+                </Text>
+            </View>
             {emailError && (
             <Text style={{
                     color: 'red',
@@ -161,16 +169,7 @@ export default function Login() {
                 onBlur={validatePasswordField}/>
             
 
-            <TouchableOpacity style={{
-                marginTop: 15,
-                width: '40%',
-                height: '10%',
-                backgroundColor: '#007bff',
-                borderRadius: 5,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-            }}
+            <TouchableOpacity style={styles.button}
             onPress={loginHandler}
             >
                 <Text style={{
@@ -196,7 +195,7 @@ const styles = StyleSheet.create({
 
     },
 
-    RegisterContainer: {
+    LoginContainer: {
         width: '80%',
         height: '50%',
         display: 'flex',
@@ -206,7 +205,9 @@ const styles = StyleSheet.create({
         gap: 5,
 
         borderRadius: 10,
-        backgroundColor: '#ffffff',
+        backgroundColor: '#ffffff7c',
+        borderColor: '#ffffff',
+        borderWidth: 1
         
     },
 
@@ -215,10 +216,20 @@ const styles = StyleSheet.create({
         height: '10%',
         borderColor: 'gray',
         borderWidth: 2,
-        borderRadius: 5,
+        borderRadius: 10,
         paddingHorizontal: 10,
 
-        borderColor: '#ddd',
-        backgroundColor: '#ffffff',
-    }
+        borderColor: '#ffffff',
+        backgroundColor: '#ffffff7c',
+    },
+
+    button: {
+        marginTop: 15,
+        width: '40%',
+        height: '8%',
+        backgroundColor: '#007bff',
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 })

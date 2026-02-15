@@ -1,5 +1,6 @@
-import { View, TextInput, ImageBackground, StyleSheet,TouchableOpacity } from 'react-native';
+import { View, TextInput, ImageBackground, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import React from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function TestGround() {
   return (
@@ -8,23 +9,14 @@ export default function TestGround() {
       style={{flex: 1}}
       resizeMode="stretch"
     >
-      <View style={styles.container}>
-        <TextInput 
-          placeholder="Hello TextInput" 
-          style={styles.input}
-        />
-
-        <Text>Hello</Text>
-        
-        <TextInput 
-          placeholder="Text Input 2" 
-          style={styles.input}/>
-    
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Submit</Text>
-          
-        </TouchableOpacity>
-      </View>
+        <LinearGradient
+        colors={['#4c669f', '#3b5998', '#192f6a']} // required
+        start={{ x: 0, y: 0 }} // optional
+        end={{ x: 1, y: 1 }}   // optional
+        style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+      >
+        <Text style={{ color: '#fff' }}>Hello Gradient</Text>
+      </LinearGradient>
     </ImageBackground>
   );
 }
