@@ -7,7 +7,7 @@ import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
-// Import screens
+
 import AppointmentServices from './screens/AppointmentServices';
 import AppointmentDate from './screens/AppointmentDate';
 import AppointmentForm from './screens/AppointmentForm';
@@ -21,7 +21,7 @@ import ForgotPassword from './screens/ForgotPassword';
 import TestGround from './screens/TestGround';
 import ChangePassword from './screens/ChangePassword';
 import ConfirmOTP from './screens/OTP';
-// Import contexts
+
 import { AppointmentDetailsContext } from './context/AppointmentDetailsContext';
 import { AuthenticationContext } from './context/AuthenticationContext';
 
@@ -68,10 +68,10 @@ export default function App() {
     routeName === 'ConfirmAppointment' ||
     routeName === 'Calendar'
   ) {
-    return { display: 'none' }; // hide tab bar
+    return { display: 'none' }; 
   }
 
-  // 👇 return your custom tab bar style for AppointmentServices and other default screens
+  
   return {
     position: 'absolute',
     bottom: 20,
@@ -158,7 +158,7 @@ export default function App() {
           component={HomeStackNavigator}
           options={({ route }) => ({
             headerShown: false,
-            tabBarStyle: getTabBarStyle(route), // 👈 apply consistently
+            tabBarStyle: getTabBarStyle(route), 
           })}
         />
         <Tab.Screen name='ViewAppointments' component={ViewAppointments} options={{headerShown: false}}/>

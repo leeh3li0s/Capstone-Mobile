@@ -1,21 +1,28 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground, ActivityIndicator } from 'react-native'
-import React, { useState, useContext, useEffect } from 'react'
-import { AuthenticationContext } from '../context/AuthenticationContext'
+// screens/Login.jsx
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground, ActivityIndicator } from 'react-native';
+import React, { useState, useContext } from 'react';
+import { AuthenticationContext } from '../context/AuthenticationContext';
 import { useNavigation } from '@react-navigation/native';
 
 export default function Login() {
     const nav = useNavigation();
-    const { setIsLoggedIn, setAuthenticationDetails } = useContext(AuthenticationContext); // Only need this
+    const { setIsLoggedIn, setAuthenticationDetails } = useContext(AuthenticationContext);
 
     const [getEmail, setEmail] = useState('');
     const [getUsername, setUsername] = useState('');
     const [getPassword, setPassword] = useState('');
-    const [getLabel, setLabel] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+ 
     const [emailError, setEmailError] = useState(false);
     const [usernameError, setUsernameError] = useState(false);
     const [passwordError, setPasswordError] = useState(false);
+    
+  
+    const [apiError, setApiError] = useState('');
+    
+   
+    const [successMessage, setSuccessMessage] = useState('');
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -54,9 +61,12 @@ export default function Login() {
         return true;
     };
 
-    // SIMPLIFIED loginHandler - directly calls backend
     const loginHandler = async () => {
-        // Use either email or username
+        
+        setApiError('');
+        setSuccessMessage('');
+        
+        
         const useEmail = getEmail.trim() !== '';
         const useUsername = getUsername.trim() !== '';
         const usePassword = getPassword.trim() !== '';
@@ -77,7 +87,7 @@ export default function Login() {
         setIsLoading(true);
 
         try {
-            // Prepare login data
+           
             const loginData = {
                 password: getPassword
             };
@@ -88,6 +98,8 @@ export default function Login() {
                 loginData.username = getUsername;
             }
 
+            console.log('Sending login data:', loginData);
+
             const response = await fetch('http://localhost:5000/login', {
                 method: 'POST',
                 headers: {
@@ -97,36 +109,45 @@ export default function Login() {
             });
 
             const data = await response.json();
+            
+            console.log('LOGIN RESPONSE:', data);
 
             if (response.ok) {
-                // FIX: Update authentication details with actual user data from backend
-                setAuthenticationDetails({
-                    email: data.user.email,
-                    username: data.user.username,
-                    pk: data.user.pk,
-                    fullname: data.user.fullname,
-                    password: '', // Clear these for security
-                    confirmPassword: '',
-                });
+                console.log('USER DATA FROM SERVER:', data.user);
+                console.log('CONTACT NUMBER VALUE:', data.user.contactnumber);
                 
-                setIsLoggedIn(true); // This triggers navigation to Home
+                
+                setSuccessMessage('Login successful! Redirecting...');
+                
+                
+                setTimeout(() => {
+                    setAuthenticationDetails({
+                        email: data.user.email,
+                        username: data.user.username,
+                        pk: data.user.pk,
+                        fullname: data.user.fullname,
+                        contactnumber: data.user.contactnumber,
+                        password: '',
+                        confirmPassword: '',
+                    });
+                    
+                    setIsLoggedIn(true);
+                }, 1500);
             } else {
-                setLabel(data.message || 'Login failed. Please check your credentials.');
-                alert(data.message || 'Login failed. Please check your credentials.');
+               
+                setApiError(data.error || 'Login failed');
+                setIsLoading(false);
             }
         } catch (error) {
             console.error('Login error:', error);
-            alert('Network error. Please check your connection.');
-        } finally {
+            setApiError('Network error. Please check your connection.');
             setIsLoading(false);
         }
     };
-
-    
     
     const forgotPasswordHandler = () => {
-        nav.navigate('ForgotPassword')
-    }
+        nav.navigate('ForgotPassword');
+    };
     
     return (
         <ImageBackground
@@ -134,86 +155,78 @@ export default function Login() {
             style={{flex: 1}}
             resizeMode="stretch"
         >
-    
             <View style={styles.mainComponent}>
                 <View style={styles.LoginContainer}>
-                    <View style={{
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        gap: 5,
-                        marginBottom: 40
-                    }}>
-                        <Text style={{ fontSize: 24, fontWeight: 'bold'}}>
-                            Login
-                        </Text>
-
-                        <Text style={{ fontSize: 12, width: '90%', textAlign: 'center' }}>
+                    <View style={styles.headerContainer}>
+                        <Text style={styles.headerTitle}>Login</Text>
+                        <Text style={styles.headerSubtitle}>
                             Welcome back! Please enter your credentials to access your account.
                         </Text>
                     </View>
                     
-                    <Text style={{ fontSize: 12, width: '90%', textAlign: 'center', color: 'red' }}>
-                            {getLabel}
-                        </Text>
+                  
+                    {successMessage ? (
+                        <View style={styles.successContainer}>
+                            <Text style={styles.successText}>{successMessage}</Text>
+                        </View>
+                    ) : null}
+                    
+                   
+                    {apiError ? (
+                        <View style={styles.apiErrorContainer}>
+                            <Text style={styles.apiErrorText}>{apiError}</Text>
+                        </View>
+                    ) : null}
 
+                    
                     {emailError && (
-                    <Text style={{
-                            color: 'red',
-                            fontSize: 10,
-                            width: '80%',
-                            paddingLeft: 5
-                            }}>
-                        Please enter your email.
-                        </Text>
+                        <Text style={styles.errorText}>Please enter a valid email.</Text>
                     )}
                     <TextInput
                         style={[
                             styles.TextInputField,
-                            emailError && { borderColor: 'red', borderWidth: 2 },
+                            emailError && styles.errorInput,
                         ]}
                         placeholder='Email'
                         value={getEmail}
                         onChangeText={(text) => {
                             setEmail(text);
                             if (emailError) setEmailError(false);
+                            setApiError('');
                         }}
-                        onBlur={validateEmailField}/>
+                        onBlur={validateEmailField}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                    />
+
+                  
                     {usernameError && (
-                    <Text style={{
-                            color: 'red',
-                            fontSize: 10,
-                            width: '80%',
-                            paddingLeft: 5
-                            }}>
-                        Please enter your username.
-                        </Text>
+                        <Text style={styles.errorText}>Please enter your username.</Text>
                     )}
                     <TextInput
                         style={[
                             styles.TextInputField,
-                            usernameError && { borderColor: 'red', borderWidth: 2 },
+                            usernameError && styles.errorInput,
                         ]}
                         placeholder='Username'
                         value={getUsername}
                         onChangeText={(text) => {
                             setUsername(text);
                             if (usernameError) setUsernameError(false);
+                            setApiError('');
                         }}
-                        onBlur={validateUsernameField}/>
+                        onBlur={validateUsernameField}
+                        autoCapitalize="none"
+                    />
+
+                 
                     {passwordError && (
-                    <Text style={{
-                            color: 'red',
-                            fontSize: 10,
-                            width: '80%',
-                            paddingLeft: 5
-                            }}>
-                        Please enter your password.
-                        </Text>
+                        <Text style={styles.errorText}>Please enter your password.</Text>
                     )}
                     <TextInput
                         style={[
                             styles.TextInputField,
-                            passwordError && { borderColor: 'red', borderWidth: 2 },
+                            passwordError && styles.errorInput,
                         ]}
                         placeholder='Password'
                         secureTextEntry
@@ -221,101 +234,162 @@ export default function Login() {
                         onChangeText={(text) => {
                             setPassword(text);
                             if (passwordError) setPasswordError(false);
+                            setApiError('');
                         }}
-                        onBlur={validatePasswordField}/>
-                    
+                        onBlur={validatePasswordField}
+                    />
 
-                    <TouchableOpacity style={styles.button}
-                    onPress={loginHandler}
+                    <TouchableOpacity 
+                        style={[styles.button, isLoading && styles.buttonDisabled]}
+                        onPress={loginHandler}
+                        disabled={isLoading}
                     >
-                        <Text style={{
-                            color: '#ffffff',
-                            fontSize: 15,
-                            fontWeight: 'bold',
-                        }}>Login</Text>
+                        {isLoading ? (
+                            <ActivityIndicator color="#ffffff" />
+                        ) : (
+                            <Text style={styles.buttonText}>Login</Text>
+                        )}
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={[styles.button, {height: '3%', backgroundColor: 'none'}]}
-                    onPress={forgotPasswordHandler}
+                    <TouchableOpacity 
+                        style={styles.forgotPasswordButton}
+                        onPress={forgotPasswordHandler}
                     >
-                        <Text style={{
-                            color: '#007bff',
-                            fontSize: 12,
-                            fontWeight: 'bold'
-                        }}>Forgot Password?</Text>
+                        <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={[styles.button, {
-                        width: '60%',
-                        height: '3%',
-                        backgroundColor: 'none'}]}
-                    onPress={() => nav.navigate('Register')}
+                    <TouchableOpacity 
+                        style={styles.registerButton}
+                        onPress={() => nav.navigate('Register')}
                     >
-                        <Text style={{
-                            color: '#ffffff',
-                            fontSize: 12,
-                        }}>Dont have an account? Register </Text>
+                        <Text style={styles.registerText}>Don't have an account? Register</Text>
                     </TouchableOpacity>
                 </View>
-
-        
-    </View>
-    </ImageBackground>
-    )
+            </View>
+        </ImageBackground>
+    );
 }
 
-// Your EXACT same styles
 const styles = StyleSheet.create({
     mainComponent: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
     },
-
     LoginContainer: {
         width: '80%',
-        height: '60%',
+        paddingVertical: 30,
+        paddingHorizontal: 20,
         justifyContent: 'center',
         alignItems: 'center',
         gap: 5,
         borderRadius: 10,
         backgroundColor: '#ffffff7c',
         borderColor: '#ffffff',
-        borderWidth: 1
+        borderWidth: 1,
     },
-
-    TextInputField: {
-        width: '80%',
-        height: '10%',
-        borderColor: 'gray',
-        borderWidth: 2,
-        borderRadius: 10,
-        paddingHorizontal: 10,
-        borderColor: '#ffffff',
-        backgroundColor: '#ffffff7c',
-    },
-
-    button: {
-        marginTop: 15,
-        width: '40%',
-        height: '8%',
-        backgroundColor: '#007bff',
-        borderRadius: 20,
+    headerContainer: {
         justifyContent: 'center',
         alignItems: 'center',
+        gap: 5,
+        marginBottom: 20,
     },
-
-    buttonText: {
-        color: '#ffffff',
-        fontSize: 15,
+    headerTitle: {
+        fontSize: 28,
         fontWeight: 'bold',
+        color: '#333',
     },
-
+    headerSubtitle: {
+        fontSize: 12,
+        width: '90%',
+        textAlign: 'center',
+        color: '#666',
+    },
+    
+    successContainer: {
+        backgroundColor: '#e8f5e8',
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 15,
+        width: '90%',
+        borderWidth: 1,
+        borderColor: '#c3e6c3',
+    },
+    successText: {
+        color: '#2e7d32',
+        fontSize: 14,
+        textAlign: 'center',
+        fontWeight: '500',
+    },
+    
+    apiErrorContainer: {
+        backgroundColor: '#ffebee',
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 15,
+        width: '90%',
+        borderWidth: 1,
+        borderColor: '#ffcdd2',
+    },
+    apiErrorText: {
+        color: '#d32f2f',
+        fontSize: 14,
+        textAlign: 'center',
+        fontWeight: '500',
+    },
+    TextInputField: {
+        width: '90%',
+        height: 45,
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 15,
+        borderColor: '#ffffff',
+        backgroundColor: '#ffffff7c',
+        marginBottom: 10,
+    },
+    errorInput: {
+        borderColor: 'red',
+        borderWidth: 2,
+    },
     errorText: {
         color: 'red',
         fontSize: 10,
-        width: '80%',
+        width: '90%',
         paddingLeft: 5,
+        marginBottom: 2,
+    },
+    button: {
+        marginTop: 15,
+        width: '50%',
+        height: 45,
+        backgroundColor: '#007bff',
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    buttonDisabled: {
+        backgroundColor: '#999',
+    },
+    buttonText: {
+        color: '#ffffff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    forgotPasswordButton: {
+        marginTop: 10,
+        padding: 5,
+    },
+    forgotPasswordText: {
+        color: '#007bff',
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
+    registerButton: {
+        marginTop: 5,
+        padding: 5,
+    },
+    registerText: {
+        color: '#007bff',
+        fontSize: 12,
     },
 });
-// 

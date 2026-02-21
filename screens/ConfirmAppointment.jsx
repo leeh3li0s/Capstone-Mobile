@@ -1,5 +1,4 @@
-// screens/ConfirmAppointment.jsx
-import { View, Text, TouchableOpacity, Alert, ScrollView, StyleSheet } from 'react-native'; // Added StyleSheet import
+import { View, Text, TouchableOpacity, Alert, ScrollView, StyleSheet } from 'react-native';
 import React, { useContext } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { AuthenticationContext } from '../context/AuthenticationContext';
@@ -9,12 +8,12 @@ export default function ConfirmAppointment() {
   const route = useRoute();
   const { getAuthenticationDetails } = useContext(AuthenticationContext);
   
+  
   const {
     service,
     appointmentDate,
     appointmentTimeSlot,
-    firstName,
-    lastName,
+    fullName,           
     contactNumber,
     email,
     reasonForVisit,
@@ -32,7 +31,7 @@ export default function ConfirmAppointment() {
         appointment_type: service,
         appointment_date: appointmentDate,
         appointment_time: appointmentTimeSlot,
-        patient_name: `${firstName} ${lastName}`,
+        patient_name: fullName,        
         patient_phone: contactNumber,
         patient_email: email,
         patient_reason: reasonForVisit,
@@ -52,7 +51,7 @@ export default function ConfirmAppointment() {
           appointment_type: service,
           appointment_date: appointmentDate,
           appointment_time: appointmentTimeSlot,
-          patient_name: `${firstName} ${lastName}`,
+          patient_name: fullName,      
           patient_phone: contactNumber,
           patient_email: email,
           patient_reason: reasonForVisit,
@@ -67,10 +66,7 @@ export default function ConfirmAppointment() {
       console.log('Server response:', data);
 
       if (response.ok) {
-        
-            nav.navigate('Home', { screen: 'AppointmentServices' });
-
-          
+        nav.navigate('Home', { screen: 'AppointmentServices' });
       } else {
         Alert.alert('Error', data.error || 'Failed to book appointment');
       }
@@ -131,7 +127,7 @@ export default function ConfirmAppointment() {
           <Text style={styles.cardTitle}>Owner Details</Text>
           <View style={styles.row}>
             <Text style={styles.label}>Name:</Text>
-            <Text style={styles.value}>{firstName} {lastName}</Text>
+            <Text style={styles.value}>{fullName}</Text>  
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>Contact:</Text>
@@ -223,7 +219,6 @@ export default function ConfirmAppointment() {
   );
 }
 
-// Changed from object to StyleSheet.create
 const styles = StyleSheet.create({
   card: {
     backgroundColor: 'white',
@@ -261,4 +256,3 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 });
-// 

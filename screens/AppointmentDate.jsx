@@ -8,37 +8,37 @@ import MobileStylesheet from '../styles/MobileStylesheet';
 export default function AppointmentDate() {
   const nav = useNavigation();
   const route = useRoute();
-  const { service } = route.params; // Get service from previous screen
+  const { service } = route.params; 
 
-  // Initialize state
+ 
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
 
-  // Modal state
+
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   const handleDateSelect = (day) => {
     setSelectedDate(day.dateString);
   };
 
-  // In AppointmentDate.jsx, update the timeSlots array
+ 
 const timeSlots = [
   '12:00 PM',
   '1:00 PM',
   '2:00 PM'
 ];
 
-// When selecting a time slot
+
 const handleTimeSelect = (slot) => {
   setSelectedTimeSlot(slot);
 };
 
-// When navigating to next screen
+
 const handleNext = () => {
   nav.navigate('AppointmentForm', {
     service: service,
     appointmentDate: selectedDate,
-    appointmentTimeSlot: selectedTimeSlot  // This will be just "12:00 PM"
+    appointmentTimeSlot: selectedTimeSlot  
   });
 };
 

@@ -47,7 +47,7 @@ export default function ForgotPassword() {
             const data = await response.json();
 
             if (response.ok) {
-                // Navigate to OTP screen, passing the email
+               
                 nav.navigate('ConfirmOTP', { email: getEmail });
             } else {
                 setApiError(data.error || 'Failed to send OTP');

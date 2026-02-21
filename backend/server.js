@@ -32,7 +32,7 @@ app.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
   
   try {
-    // Check if user exists
+    
     const userResult = await pool.query(
       'SELECT * FROM patient_account WHERE email = $1',
       [email]
@@ -47,7 +47,7 @@ app.post('/forgot-password', async (req, res) => {
     // Generate OTP
     const otp = generateOTP();
     const expiry = new Date();
-    expiry.setMinutes(expiry.getMinutes() + 15); // OTP expires in 15 minutes
+    expiry.setMinutes(expiry.getMinutes() + 15); 
 
     // Store OTP in database
     await pool.query(
@@ -137,7 +137,7 @@ app.post('/reset-password', async (req, res) => {
       return res.status(400).json({ error: 'Invalid or expired OTP' });
     }
 
-    // Hash new password
+    
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Update password and clear OTP fields
@@ -182,7 +182,7 @@ app.post('/reset-password', async (req, res) => {
 app.get('/test-email', async (req, res) => {
   try {
     const msg = {
-      to: 'your-test-email@gmail.com', // Replace with your email
+      to: 'your-test-email@gmail.com',
       from: process.env.FROM_EMAIL,
       subject: 'SendGrid Test',
       text: 'If you receive this, SendGrid is working!',
@@ -206,12 +206,13 @@ app.get('/test', async (req, res) => {
   }
 });
 
+
 // Register endpoint
 app.post('/register', async (req, res) => {
-  const { email, username, password } = req.body;
+  const { fullName, contactNumber, email, username, password } = req.body;
   
   try {
-    // Check if user exists
+    
     const userExists = await pool.query(
       'SELECT * FROM patient_account WHERE email = $1 OR username = $2',
       [email, username]
@@ -221,14 +222,32 @@ app.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Email or username already exists' });
     }
 
-    // Hash password
+    
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    // Insert new user - matching your patient_account table
+    
     const result = await pool.query(
-      `INSERT INTO patient_account (email, username, password, fullname, contactnumber, status, datecreated, role) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING pk, email, username`,
-      [email, username, hashedPassword, '', '', 'active', new Date().toISOString().split('T')[0], 'patient']
+      `INSERT INTO patient_account (
+        email, 
+        username, 
+        password, 
+        fullname, 
+        contactnumber, 
+        status, 
+        datecreated, 
+        role
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+      RETURNING pk, email, username, fullname, contactnumber`,
+      [
+        email, 
+        username, 
+        hashedPassword, 
+        fullName,
+        contactNumber, 
+        'active', 
+        new Date().toISOString().split('T')[0], 
+        'patient'
+      ]
     );
 
     res.status(201).json({ 
@@ -246,7 +265,7 @@ app.post('/login', async (req, res) => {
   const { email, username, password } = req.body;
   
   try {
-    // Find by email or username
+    
     let query;
     let value;
     
@@ -266,13 +285,13 @@ app.post('/login', async (req, res) => {
 
     const user = result.rows[0];
     
-    // Check password
+    
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
       return res.status(400).json({ error: 'Invalid password' });
     }
 
-    // Return user info (excluding password)
+    
     res.json({ 
       message: 'Login successful',
       user: {
@@ -280,6 +299,7 @@ app.post('/login', async (req, res) => {
         email: user.email,
         username: user.username,
         fullname: user.fullname,
+        contactnumber: user.contactnumber, 
         role: user.role
       }
     });
@@ -287,6 +307,7 @@ app.post('/login', async (req, res) => {
     console.error('Login error:', err);
     res.status(500).json({ error: err.message });
   }
+});
 
 
  // ==================== APPOINTMENT ROUTES ====================
@@ -310,22 +331,22 @@ app.post('/appointments', async (req, res) => {
     pet_breed
   } = req.body;
 
-  // Basic validation
+  // validation
   if (!user_id || !appointment_type || !appointment_date || !appointment_time) {
     console.log('Missing required fields:', { user_id, appointment_type, appointment_date, appointment_time });
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
   try {
-    // Format the time for PostgreSQL (expects HH:MM:SS format)
+    
     let formattedTime = appointment_time;
     
-    // Check if time is in "12:00 PM" format and convert to "12:00:00"
+    
     if (appointment_time && appointment_time.includes(' ')) {
       const [time, modifier] = appointment_time.split(' ');
       let [hours, minutes] = time.split(':');
       
-      // Convert to 24-hour format
+      
       if (modifier === 'PM' && hours !== '12') {
         hours = parseInt(hours, 10) + 12;
       }
@@ -333,10 +354,10 @@ app.post('/appointments', async (req, res) => {
         hours = '00';
       }
       
-      // Pad hours with leading zero if needed
+      
       hours = hours.toString().padStart(2, '0');
       
-      // Format as HH:MM:SS
+      
       formattedTime = `${hours}:${minutes}:00`;
       console.log('Formatted time:', formattedTime);
     }
@@ -361,7 +382,7 @@ app.post('/appointments', async (req, res) => {
         user_id,
         appointment_type,
         appointment_date,
-        formattedTime, // Use formatted time
+        formattedTime, 
         patient_name || '',
         patient_phone || '',
         patient_email || '',
@@ -402,10 +423,10 @@ app.get('/appointments/user/:userId', async (req, res) => {
       [userId]
     );
 
-    // Format the time back to 12-hour format for display if needed
+   
     const appointments = result.rows.map(appointment => {
       if (appointment.appointment_time) {
-        // Convert from HH:MM:SS to HH:MM AM/PM
+        
         const timeStr = appointment.appointment_time;
         const [hours, minutes] = timeStr.split(':');
         let hour = parseInt(hours, 10);
@@ -432,7 +453,7 @@ app.get('/appointments/user/:userId', async (req, res) => {
   }
 });
 
-// Optional: Get all appointments (with optional date filter)
+
 app.get('/appointments', async (req, res) => {
   const { date } = req.query;
   
@@ -447,7 +468,7 @@ app.get('/appointments', async (req, res) => {
     
     const result = await pool.query(query, params);
     
-    // Format times for display
+    
     const appointments = result.rows.map(appointment => {
       if (appointment.appointment_time) {
         const timeStr = appointment.appointment_time;
@@ -478,7 +499,7 @@ app.get('/appointments', async (req, res) => {
 
 
 //Start server
-});
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

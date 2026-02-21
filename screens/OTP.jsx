@@ -79,7 +79,7 @@ export default function ConfirmOTP() {
                     </Text>
                     </View>
 
-                    {/* API Error Message */}
+                 
                     {apiError ? (
                         <Text style={styles.apiErrorText}>{apiError}</Text>
                     ) : null}
@@ -95,7 +95,7 @@ export default function ConfirmOTP() {
                         placeholder="Enter 6-digit OTP"
                         value={getOTP}
                         onChangeText={(text) => {
-                            setOTP(text.replace(/[^0-9]/g, '')); // Only allow numbers
+                            setOTP(text.replace(/[^0-9]/g, '')); 
                             if (otpError) setOtpError(false);
                             setApiError('');
                         }}

@@ -1,13 +1,5 @@
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  SafeAreaView
-} from 'react-native';
-import React, { useState, useContext } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView } from 'react-native';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { AuthenticationContext } from '../context/AuthenticationContext';
 
@@ -17,10 +9,15 @@ export default function AppointmentForm() {
   const { service, appointmentDate, appointmentTimeSlot } = route.params;
   const { getAuthenticationDetails } = useContext(AuthenticationContext);
 
+
+  useEffect(() => {
+    console.log('Auth Details in AppointmentForm:', getAuthenticationDetails);
+  }, []);
+
+ 
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    contactNumber: '',
+    fullName: getAuthenticationDetails?.fullname || '',
+    contactNumber: getAuthenticationDetails?.contactnumber || '',
     email: getAuthenticationDetails?.email || '',
     reasonForVisit: '',
     petName: '',
@@ -31,6 +28,18 @@ export default function AppointmentForm() {
 
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+
+  
+  useEffect(() => {
+    if (getAuthenticationDetails) {
+      setFormData(prev => ({
+        ...prev,
+        fullName: getAuthenticationDetails.fullname || '',
+        contactNumber: getAuthenticationDetails.contactnumber || '',
+        email: getAuthenticationDetails.email || '',
+      }));
+    }
+  }, [getAuthenticationDetails]);
 
   const updateField = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -85,7 +94,6 @@ export default function AppointmentForm() {
 
   const handleSubmit = () => {
     if (!validateForm()) {
-      
       return;
     }
 
@@ -121,35 +129,18 @@ export default function AppointmentForm() {
           <Text style={styles.sectionTitle}>Owner Details</Text>
 
           <Text style={styles.label}>Full Name</Text>
-          <View style={styles.nameRow}>
-            <View style={{ flex: 1, marginRight: 8 }}>
-              <TextInput
-                style={[
-                  styles.input,
-                  touched.firstName && errors.firstName && { borderColor: 'red' }
-                ]}
-                placeholder="First Name"
-                value={formData.firstName}
-                onChangeText={text => updateField('firstName', text)}
-                onBlur={() => handleBlur('firstName')}
-              />
-              {renderError('firstName')}
-            </View>
-
-            <View style={{ flex: 1 }}>
-              <TextInput
-                style={[
-                  styles.input,
-                  touched.lastName && errors.lastName && { borderColor: 'red' }
-                ]}
-                placeholder="Last Name"
-                value={formData.lastName}
-                onChangeText={text => updateField('lastName', text)}
-                onBlur={() => handleBlur('lastName')}
-              />
-              {renderError('lastName')}
-            </View>
-          </View>
+          <TextInput
+            style={[
+              styles.input,
+              touched.fullName && errors.fullName && { borderColor: 'red' }
+            ]}
+            placeholder="Full Name"
+            value={formData.fullName}
+            onChangeText={text => updateField('fullName', text)}
+            onBlur={() => handleBlur('fullName')}
+            editable={true} 
+          />
+          {renderError('fullName')}
 
           <Text style={styles.label}>Contact Number</Text>
           <TextInput
@@ -219,7 +210,7 @@ export default function AppointmentForm() {
               styles.input,
               touched.petType && errors.petType && { borderColor: 'red' }
             ]}
-            placeholder="Species"
+            placeholder="Species (e.g., Dog, Cat)"
             value={formData.petType}
             onChangeText={text => updateField('petType', text)}
             onBlur={() => handleBlur('petType')}
@@ -272,8 +263,6 @@ export default function AppointmentForm() {
         <TouchableOpacity style={styles.continueButton} onPress={handleSubmit}>
           <Text style={styles.continueButtonText}>Continue</Text>
         </TouchableOpacity>
-
-        
       </ScrollView>
     </SafeAreaView>
   );
@@ -315,8 +304,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginLeft: 4,
   },
-  nameRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-  halfInput: { width: '48%' },
   textArea: { height: 80, textAlignVertical: 'top' },
   genderContainer: { flexDirection: 'row', gap: 12, marginBottom: 20 },
   genderButton: {
@@ -331,16 +318,6 @@ const styles = StyleSheet.create({
   genderButtonSelected: { backgroundColor: '#4F7CFF', borderColor: '#4F7CFF' },
   genderButtonText: { fontSize: 16, color: '#333', fontWeight: '500' },
   genderButtonTextSelected: { color: '#fff' },
-  uploadLabel: { fontSize: 16, color: '#333', marginBottom: 12 },
-  uploadButton: {
-    borderWidth: 1,
-    borderColor: '#007AFF',
-    borderRadius: 6,
-    padding: 12,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  uploadButtonText: { fontSize: 16, color: '#007AFF', fontWeight: '500' },
   continueButton: {
     backgroundColor: '#4F7CFF',
     borderRadius: 8,
@@ -350,4 +327,3 @@ const styles = StyleSheet.create({
   },
   continueButtonText: { fontSize: 18, color: 'white', fontWeight: 'bold' },
 });
-// 

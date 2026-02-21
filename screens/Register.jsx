@@ -1,26 +1,62 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground, ActivityIndicator } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground, ActivityIndicator, ScrollView } from 'react-native';
+import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 
 export default function Register() {
     const nav = useNavigation();
 
-    // Keep all your existing state
+   
+    const [getFullName, setFullName] = useState('');
+    const [getContactNumber, setContactNumber] = useState('');
+    
+   
     const [getEmail, setEmail] = useState('');
     const [getUsername, setUsername] = useState('');
     const [getPassword, setPassword] = useState('');
     const [getConfirmPassword, setConfirmPassword] = useState('');
-    const [isLoading, setIsLoading] = useState(false); // Add loading state
+    
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Keep all your existing error states
+   
+    const [fullNameError, setFullNameError] = useState(false);
+    const [contactError, setContactError] = useState(false);
     const [emailError, setEmailError] = useState(false);
     const [usernameError, setUsernameError] = useState(false);
     const [passwordError, setPasswordError] = useState(false);
     const [confirmError, setConfirmError] = useState(false);
+    
+ 
+    const [apiError, setApiError] = useState('');
+    
+    
+    const [successMessage, setSuccessMessage] = useState('');
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^[0-9]{10,15}$/;
 
-    // Keep all your existing validation functions
+    // Validation 
+    const validateFullName = () => {
+        if (!getFullName.trim()) {
+            setFullNameError(true);
+            return false;
+        }
+        setFullNameError(false);
+        return true;
+    };
+
+    const validateContact = () => {
+        if (!getContactNumber.trim()) {
+            setContactError(true);
+            return false;
+        }
+        if (!phoneRegex.test(getContactNumber.replace(/[^0-9]/g, ''))) {
+            setContactError(true);
+            return false;
+        }
+        setContactError(false);
+        return true;
+    };
+
     const validateEmail = (value) => {
         return emailRegex.test(value);
     };
@@ -48,7 +84,7 @@ export default function Register() {
     };
 
     const validatePasswordField = () => {
-        if (!getPassword.trim()) {
+        if (!getPassword.trim() || getPassword.length < 6) {
             setPasswordError(true);
             return false;
         }
@@ -69,27 +105,34 @@ export default function Register() {
         return true;
     };
 
-    // SIMPLIFIED registerHandler - directly calls backend
     const registerHandler = async () => {
-        // Validate all fields first
+       
+        setApiError('');
+        setSuccessMessage('');
+        
+        
+        const fullNameValid = validateFullName();
+        const contactValid = validateContact();
         const emailValid = validateEmailField();
         const usernameValid = validateUsernameField();
         const passwordValid = validatePasswordField();
         const confirmValid = validateConfirmPasswordField();
 
-        if (!emailValid || !usernameValid || !passwordValid || !confirmValid) {
+        if (!fullNameValid || !contactValid || !emailValid || !usernameValid || !passwordValid || !confirmValid) {
             return;
         }
 
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:5000/register', { // Match your server port
+            const response = await fetch('http://localhost:5000/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
+                    fullName: getFullName,
+                    contactNumber: getContactNumber,
                     email: getEmail,
                     username: getUsername,
                     password: getPassword,
@@ -99,46 +142,94 @@ export default function Register() {
             const data = await response.json();
 
             if (response.ok) {
-                alert('Registration successful! Please login.');
-                nav.navigate('Login');
+            
+                setSuccessMessage('Registration successful! Redirecting to login...');
+                
+             
+                setTimeout(() => {
+                    nav.navigate('Login');
+                }, 2000);
             } else {
-                alert(data.error || 'Registration failed');
+                
+                setApiError(data.error || 'Registration failed');
             }
         } catch (error) {
             console.error('Registration error:', error);
-            alert('Network error. Please check your connection.');
+            setApiError('Network error. Please check your connection.');
         } finally {
             setIsLoading(false);
         }
     };
     
-    // Your EXACT same UI (just add disabled to button)
     return (
         <ImageBackground
             source={require('../assets/Background.png')}
             style={{ flex: 1 }}
             resizeMode="stretch"
         >
-            <View style={styles.mainComponent}>
-                
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.RegisterContainer}>
-                    <View style={{
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        gap: 5,
-                        marginBottom: 40
-                        }}>
-                        <Text style={{ fontSize: 24, fontWeight: 'bold'}}>
-                        Register
-                    </Text>
-
+                    <View style={styles.headerContainer}>
+                        <Text style={styles.headerTitle}>Create Account</Text>
+                        <Text style={styles.headerSubtitle}>Fill in your personal details to get started</Text>
                     </View>
 
-                    {/* EMAIL */}
+                   
+                    {successMessage ? (
+                        <View style={styles.successContainer}>
+                            <Text style={styles.successText}>{successMessage}</Text>
+                        </View>
+                    ) : null}
+
+                  
+                    {apiError ? (
+                        <View style={styles.apiErrorContainer}>
+                            <Text style={styles.apiErrorText}>{apiError}</Text>
+                        </View>
+                    ) : null}
+
+                    {/* PERSONAL DETAILS SECTION */}
+                    <Text style={styles.sectionTitle}>Personal Details</Text>
+
+                    {/* Full Name */}
+                    {fullNameError && (
+                        <Text style={styles.errorText}>Please enter your full name.</Text>
+                    )}
+                    <TextInput
+                        style={[styles.TextInputField, fullNameError && styles.errorInput]}
+                        placeholder="Full Name"
+                        value={getFullName}
+                        onChangeText={(text) => {
+                            setFullName(text);
+                            if (fullNameError) setFullNameError(false);
+                            setApiError('');
+                        }}
+                        onBlur={validateFullName}
+                    />
+
+                    {/* Contact Number */}
+                    {contactError && (
+                        <Text style={styles.errorText}>Please enter a valid contact number (10-15 digits).</Text>
+                    )}
+                    <TextInput
+                        style={[styles.TextInputField, contactError && styles.errorInput]}
+                        placeholder="Contact Number"
+                        value={getContactNumber}
+                        onChangeText={(text) => {
+                            setContactNumber(text);
+                            if (contactError) setContactError(false);
+                            setApiError('');
+                        }}
+                        onBlur={validateContact}
+                        keyboardType="phone-pad"
+                    />
+
+                    {/* ACCOUNT DETAILS SECTION */}
+                    <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Account Details</Text>
+
+                    {/* Email */}
                     {emailError && (
-                        <Text style={styles.errorText}>
-                            Please enter a valid email.
-                        </Text>
+                        <Text style={styles.errorText}>Please enter a valid email.</Text>
                     )}
                     <TextInput
                         style={[styles.TextInputField, emailError && styles.errorInput]}
@@ -147,17 +238,16 @@ export default function Register() {
                         onChangeText={(text) => {
                             setEmail(text);
                             if (emailError) setEmailError(false);
+                            setApiError('');
                         }}
                         onBlur={validateEmailField}
                         keyboardType="email-address"
                         autoCapitalize="none"
                     />
 
-                    {/* USERNAME */}
+                    {/* Username */}
                     {usernameError && (
-                        <Text style={styles.errorText}>
-                            Please enter a username.
-                        </Text>
+                        <Text style={styles.errorText}>Please enter a username.</Text>
                     )}
                     <TextInput
                         style={[styles.TextInputField, usernameError && styles.errorInput]}
@@ -166,15 +256,15 @@ export default function Register() {
                         onChangeText={(text) => {
                             setUsername(text);
                             if (usernameError) setUsernameError(false);
+                            setApiError('');
                         }}
                         onBlur={validateUsernameField}
+                        autoCapitalize="none"
                     />
 
-                    {/* PASSWORD */}
+                    {/* Password */}
                     {passwordError && (
-                        <Text style={styles.errorText}>
-                            Please enter a password.
-                        </Text>
+                        <Text style={styles.errorText}>Password must be at least 6 characters.</Text>
                     )}
                     <TextInput
                         style={[styles.TextInputField, passwordError && styles.errorInput]}
@@ -184,15 +274,14 @@ export default function Register() {
                         onChangeText={(text) => {
                             setPassword(text);
                             if (passwordError) setPasswordError(false);
+                            setApiError('');
                         }}
                         onBlur={validatePasswordField}
                     />
 
-                    {/* CONFIRM PASSWORD */}
+                    {/* Confirm Password */}
                     {confirmError && (
-                        <Text style={styles.errorText}>
-                            Passwords do not match.
-                        </Text>
+                        <Text style={styles.errorText}>Passwords do not match.</Text>
                     )}
                     <TextInput
                         style={[styles.TextInputField, confirmError && styles.errorInput]}
@@ -202,12 +291,13 @@ export default function Register() {
                         onChangeText={(text) => {
                             setConfirmPassword(text);
                             if (confirmError) setConfirmError(false);
+                            setApiError('');
                         }}
                         onBlur={validateConfirmPasswordField}
                     />
 
                     <TouchableOpacity
-                        style={styles.button}
+                        style={[styles.button, isLoading && styles.buttonDisabled]}
                         onPress={registerHandler}
                         disabled={isLoading}
                     >
@@ -217,69 +307,134 @@ export default function Register() {
                             <Text style={styles.buttonText}>Register</Text>
                         )}
                     </TouchableOpacity>
+
+                    <TouchableOpacity 
+                        style={styles.loginLink}
+                        onPress={() => nav.navigate('Login')}
+                    >
+                        <Text style={styles.loginLinkText}>
+                            Already have an account? Login
+                        </Text>
+                    </TouchableOpacity>
                 </View>
-            </View>
+            </ScrollView>
         </ImageBackground>
-    )
+    );
 }
 
-// Your EXACT same styles
 const styles = StyleSheet.create({
-    mainComponent: {
-        flex: 1,
+    scrollContainer: {
+        flexGrow: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        paddingVertical: 40,
     },
-
     RegisterContainer: {
-        width: '80%',
-        height: '60%',
+        width: '85%',
+        backgroundColor: '#ffffff7c',
+        borderRadius: 10,
+        borderColor: '#c5c5c573',
+        borderWidth: 1,
+        padding: 20,
+    },
+    headerContainer: {
         justifyContent: 'center',
         alignItems: 'center',
         gap: 5,
-        borderRadius: 10,
-        backgroundColor: '#ffffff7c',
-        borderColor: '#c5c5c573',
-        borderWidth: 1
+        marginBottom: 30,
     },
-
+    headerTitle: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    headerSubtitle: {
+        fontSize: 14,
+        textAlign: 'center',
+        color: '#666',
+    },
+   
+    successContainer: {
+        backgroundColor: '#e8f5e8',
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: '#c3e6c3',
+    },
+    successText: {
+        color: '#2e7d32',
+        fontSize: 14,
+        textAlign: 'center',
+        fontWeight: '500',
+    },
+ 
+    apiErrorContainer: {
+        backgroundColor: '#ffebee',
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: '#ffcdd2',
+    },
+    apiErrorText: {
+        color: '#d32f2f',
+        fontSize: 14,
+        textAlign: 'center',
+        fontWeight: '500',
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#4F7CFF',
+        marginBottom: 10,
+        marginLeft: 5,
+    },
     TextInputField: {
-        width: '80%',
-        height: '10%',
-        borderColor: 'gray',
-        borderWidth: 2,
-        borderRadius: 10,
-        paddingHorizontal: 10,
+        width: '100%',
+        height: 45,
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 15,
         borderColor: '#ffffff',
         backgroundColor: '#ffffff7c',
+        marginBottom: 15,
     },
-
     errorInput: {
         borderColor: 'red',
         borderWidth: 2,
     },
-
     errorText: {
         color: 'red',
         fontSize: 10,
-        width: '80%',
+        width: '100%',
         paddingLeft: 5,
+        marginBottom: 2,
     },
-
     button: {
-        marginTop: 15,
-        width: '40%',
-        height: '8%',
+        marginTop: 20,
+        width: '60%',
+        height: 45,
         backgroundColor: '#007bff',
-        borderRadius: 20,
+        borderRadius: 25,
         justifyContent: 'center',
         alignItems: 'center',
+        alignSelf: 'center',
     },
-
+    buttonDisabled: {
+        backgroundColor: '#999',
+    },
     buttonText: {
         color: '#ffffff',
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: 'bold',
-    }
+    },
+    loginLink: {
+        marginTop: 15,
+        alignSelf: 'center',
+    },
+    loginLinkText: {
+        color: '#007bff',
+        fontSize: 14,
+    },
 });
-// 

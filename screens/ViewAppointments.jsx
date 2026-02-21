@@ -1,4 +1,3 @@
-// screens/ViewAppointments.jsx
 import { View, Text, ScrollView, TouchableOpacity, Modal, StyleSheet, ActivityIndicator } from 'react-native';
 import React, { useContext, useState, useEffect } from 'react';
 import { AuthenticationContext } from '../context/AuthenticationContext';
